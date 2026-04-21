@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/download_all"
+        android:title="@string/download_all" />
+    <item android:id="@+id/manual_pick"
+        android:title="@string/download_selected_files" />
+    <item android:id="@+id/copy_magnet"
+        android:title="@string/copy_magnet" />
+    <item android:id="@+id/share_magnet"
+        android:title="@string/share_magnet" />
+</menu>

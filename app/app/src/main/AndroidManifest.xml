@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:installLocation="auto">
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature android:name="android.software.leanback"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <application
+        android:name=".base.UnchainedApplication"
+        android:allowBackup="true"
+        android:banner="@mipmap/banner"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/unchained_backup"
+        android:icon="@mipmap/icon_launcher"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:roundIcon="@mipmap/icon_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Unchained.Material3.Green.One"
+        >
+
+        <activity
+            android:name=".settings.view.SettingsActivity"
+            android:parentActivityName=".base.MainActivity" />
+
+        <activity
+            android:name=".base.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+            <!-- Search Plugins -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.OPENABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.unchained" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.OPENABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathSuffix=".unchained"
+                    tools:targetApi="s" />
+            </intent-filter>
+            <!-- container files-->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.dlc" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.rsdf" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.ccf" />
+
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="file" />
+                <data android:scheme="content" />
+                <data android:mimeType="*/*" />
+
+                <data android:host="*" />
+                <data android:pathPattern=".*\\.ccf3" />
+
+            </intent-filter>
+            <!-- Shamelessly copied from LibreTorrent-->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="application/x-bittorrent"
+                    android:scheme="file" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="file" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="application/x-bittorrent"
+                    android:scheme="content" />
+            </intent-filter>
+            <!-- accept all the incoming torrent and magnet links -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="content" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="*/*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="*/*"
+                    android:pathPattern=".*\\.torrent"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="application/x-bittorrent"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="*"
+                    android:mimeType="application/x-bittorrent"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="magnet" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" />
+                <data android:scheme="https" />
+
+                <data android:host="1fichier.com" />
+                <data android:host="2shared.com" />
+                <data android:host="4shared.com" />
+
+                <data android:host="alfafile.net" />
+
+                <data android:host="bdupload.in" />
+                <data android:host="brupload.net" />
+                <data android:host="btafile.com" />
+
+                <data android:host="clicknupload.me" />
+                <data android:host="clicknupload.click" />
+                <data android:host="cosmobox.org" />
+
+                <!-- confirmed -->
+                <data android:host="dailymotion.com" />
+                <!-- confirmed -->
+                <data android:host="dailyuploads.net" />
+                <data android:host="ddownload.com" />
+                <data android:host="ddl.to" />
+                <data android:host="depositfiles.com" />
+                <data android:host="douploads.net" />
+                <data android:host="drop.download" />
+                <data android:host="dropbox.com" />
+
+                <data android:host="ex-load.com" />
+                <data android:host="extmatrix.com" />
+
+                <data android:host="fikper.com" />
+                <data android:host="file.al" />
+                <data android:host="fboom.me" />
+                <data android:host="filefactory.com" />
+                <data android:host="filefox.cc" />
+                <data android:host="filer.net" />
+                <!-- confirmed -->
+                <data android:host="filespace.com" />
+                <data android:host="filestore.me" />
+                <data android:host="fileupload.pw" />
+                <data android:host="filextras.com" />
+                <data android:host="flashbit.cc" />
+                <data android:host="florenfile.com" />
+                <data android:host="fshare.vn" />
+
+                <data android:host="gigapeta.com" />
+                <data android:host="docs.google.com" />
+                <data android:host="drive.google.com" />
+
+                <data android:host="heroupload.com" />
+                <data android:host="hexload.net" />
+                <!-- confirmed -->
+                <data android:host="hitfile.net" />
+                <!-- confirmed -->
+                <data android:host="htfl.net" />
+                <data android:host="hotlink.cc" />
+                <!-- confirmed -->
+                <data android:host="hulkshare.com" />
+
+                <data android:host="icerbox.com" />
+                <data android:host="icloud.com" />
+                <data android:host="isra.cloud" />
+
+                <data android:host="katfile.cloud" />
+                <data android:host="katfile.com" />
+                <data android:host="keep2share.cc" />
+
+                <data android:host="mediafire.com" />
+                <data android:host="mega.nz" />
+                <data android:host="mega.co.nz" />
+                <data android:host="mp4upload.com" />
+
+                <data android:host="nelion.me" />
+                <data android:host="nitroflare.com" />
+
+                <data android:host="prefiles.com" />
+
+                <!-- confirmed -->
+                <data android:host="radiotunes.com" />
+                <data android:host="rapidgator.net" />
+                <data android:host="rapidrar.com" />
+                <data android:host="rapidu.net" />
+                <data android:host="rarefile.net" />
+                <!-- confirmed -->
+                <data android:host="rutube.ru" />
+
+                <data android:host="scribd.com" />
+                <data android:host="send.cm" />
+                <!-- confirmed -->
+                <data android:host="send.now" />
+                <data android:host="sendspace.com" />
+                <data android:host="simfileshare.net" />
+                <data android:host="soundcloud.com" />
+                <data android:host="streamtape.com" />
+
+                <data android:host="takefile.link" />
+                <data android:host="terabytez.org" />
+                <data android:host="tezfiles.com" />
+                <data android:host="turbobit.net" />
+                <!-- confirmed -->
+                <data android:host="trbt.cc" />
+
+                <data android:host="ubiqfile.com" />
+                <data android:host="uloz.to" />
+                <data android:host="uploadboy.com" />
+                <data android:host="uploadgig.com" />
+                <data android:host="uploadrar.com" />
+                <data android:host="uploady.io" />
+                <data android:host="upstore.net" />
+
+                <data android:host="vidcloud.ru" />
+                <data android:host="videobin.co" />
+                <data android:host="vidlox.tv" />
+                <data android:host="vidoza.net" />
+                <data android:host="vimeo.com" />
+                <data android:host="vivo.sx" />
+                <data android:host="vk.com" />
+                <data android:host="voe.sx" />
+
+                <data android:host="wipfiles.net" />
+                <data android:host="worldbytez.com" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name="com.github.livingwithhippos.unchained.data.service.ForegroundTorrentService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
+
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+    </application>
+
+</manifest>

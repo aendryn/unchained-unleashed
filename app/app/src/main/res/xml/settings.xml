@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:summary="@string/restart_to_apply"
+        android:title="@string/title_aspect">
+
+        <Preference
+            app:key="selected_theme"
+            app:title="@string/title_theme_preference" />
+
+        <DropDownPreference
+            android:defaultValue="auto"
+            android:entries="@array/night_mode"
+            android:entryValues="@array/night_mode_values"
+            android:key="day_night_theme"
+            android:title="@string/night_theme"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/download">
+
+        <DropDownPreference
+            android:defaultValue="download_manager_system"
+            android:entries="@array/downloader"
+            android:entryValues="@array/downloader_values"
+            android:key="download_manager"
+            android:title="@string/download_manager"
+            app:summary="@string/download_manager_description"
+            app:useSimpleSummaryProvider="true" />
+
+        <Preference
+            app:summary="@string/custom_downloader_options_description"
+            app:title="@string/custom_downloader_options" />
+
+        <Preference
+            app:key="download_folder_key"
+            app:summary="@string/pick_download_folder_description"
+            app:title="@string/pick_download_folder" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="vibrate_on_download"
+            app:title="@string/vibrate_on_download" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="download_only_on_unmetered"
+            app:summary="@string/unmetered_downloads_description"
+            app:title="@string/unmetered_downloads" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/remote_devices"
+        app:allowDividerBelow="false">
+
+        <Preference
+            app:key="manage_remote_devices"
+            app:summary="@string/remote_devices_summary"
+            app:title="@string/manage_remote_devices" />
+
+        <Preference
+            app:key="kodi_remote_control_info"
+            app:summary="@string/enable_kodi_control"
+            app:title="@string/kodi_remote_control" />
+
+        <PreferenceCategory
+            android:title="@string/default_media_player"
+            app:allowDividerAbove="false"
+            app:allowDividerBelow="false">
+            <DropDownPreference
+                android:defaultValue="vlc"
+                android:entries="@array/default_media_player"
+                android:entryValues="@array/default_media_player_values"
+                android:key="default_media_player"
+                android:title="@string/default_media_player"
+                app:useSimpleSummaryProvider="true" />
+
+            <Preference android:summary="@string/custom_media_player_summary" />
+
+            <EditTextPreference
+                android:defaultValue=""
+                android:key="custom_media_player"
+                android:selectAllOnFocus="true"
+                android:singleLine="true"
+                android:title="@string/custom_media_player"
+                app:useSimpleSummaryProvider="true" />
+        </PreferenceCategory>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/notifications">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="notification_torrent_key"
+            app:summary="@string/torrent_monitoring_description"
+            app:title="@string/enable_torrent_monitoring_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/search">
+
+        <Preference
+            app:key="install_plugins_instructions"
+            app:summary="@string/install_plugins_summary"
+            app:title="@string/install_plugins" />
+
+        <Preference
+            app:key="delete_external_plugins"
+            app:summary="@string/delete_plugins_summary"
+            app:title="@string/delete_plugins" />
+
+        <DropDownPreference
+            android:defaultValue="plugins"
+            android:entries="@array/search_start_destination"
+            android:entryValues="@array/search_start_destination_values"
+            android:key="search_start_destination"
+            android:summary="@string/summary_search_start_destination"
+            android:title="@string/title_search_start_destination"
+            app:useSimpleSummaryProvider="true" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="use_doh_key"
+            app:title="@string/enable_doh" />
+
+        <DropDownPreference
+            android:defaultValue="quad9"
+            android:entries="@array/doh_provider"
+            android:entryValues="@array/doh_provider_values"
+            android:key="doh_provider"
+            android:title="@string/pick_doh_provider"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/ui_settings">
+
+        <Preference app:summary="@string/ui_settings_summary" />
+
+        <DropDownPreference
+            android:defaultValue="user"
+            android:entries="@array/main_screen"
+            android:entryValues="@array/main_screen_values"
+            android:key="main_screen"
+            android:summary="@string/summary_main_screen"
+            android:title="@string/title_main_screen"
+            app:summary="@string/summary_main_screen"
+            app:useSimpleSummaryProvider="true" />
+
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="show_folders_filters"
+            app:summary="@string/show_folder_filters_summary"
+            app:title="@string/show_folder_filters" />
+
+        <PreferenceCategory android:title="@string/download_details">
+
+            <SeekBarPreference
+                android:defaultValue="50"
+                android:max="2500"
+                android:min="50"
+                app:key="paging_size"
+                app:showSeekBarValue="true"
+                app:summary="@string/summary_loading_size"
+                app:title="@string/loading_size" />
+
+            <Preference app:summary="@string/download_details_button_choice" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                app:key="show_share_button"
+                app:title="@string/show_share_button" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                app:key="show_open_button"
+                app:title="@string/show_open_button" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                app:key="show_copy_button"
+                app:title="@string/show_copy_button" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                app:key="show_download_button"
+                app:title="@string/show_download_button" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                app:key="show_media_button"
+                app:summary="@string/show_media_player_button_summary"
+                app:title="@string/show_media_player_button" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                android:key="show_streaming"
+                android:title="@string/show_streaming" />
+
+            <SwitchPreference
+                android:defaultValue="true"
+                android:key="show_load_stream_button"
+                android:title="@string/show_load_stream_button" />
+
+        </PreferenceCategory>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/title_various">
+
+        <Preference
+            android:key="user_logout"
+            app:title="@string/logout" />
+
+        <EditTextPreference
+            android:defaultValue="10"
+            android:inputType="number"
+            android:key="filter_size_mb"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:summary="@string/file_size_filter_description"
+            android:title="@string/file_size_filter" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="use_referral_key"
+            app:summary="@string/referral_summary"
+            app:title="@string/referral" />
+
+        <Preference
+            app:key="update_regexps"
+            app:title="@string/update_regexps" />
+
+        <Preference
+            app:key="feedback"
+            app:summary="@string/feedback_summary"
+            app:title="@string/feedback_title" />
+
+        <Preference
+            app:key="credits"
+            app:title="@string/credits_title" />
+
+        <Preference
+            app:key="license"
+            app:summary="@string/license_gpl"
+            app:title="@string/license_title" />
+
+        <Preference
+            app:key="terms"
+            app:title="@string/terms_title" />
+
+        <Preference
+            app:key="privacy"
+            app:title="@string/privacy_policy_title" />
+
+
+        <Preference
+            app:key="app_version"
+            app:summary="4.2.3-beta"
+            app:title="@string/version" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

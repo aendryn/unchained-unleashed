@@ -1,0 +1,6 @@
+What's new in 1.5.0:
+- added Korean translation thanks to poihoii
+- torrent file can be selected by pressing on their whole row
+- show user code needed for new authentication
+- "downloaded" torrents are now shown as "ready" for clarity
+- updated libraries

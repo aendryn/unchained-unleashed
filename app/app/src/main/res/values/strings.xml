@@ -1,0 +1,773 @@
+<resources>
+    <string name="app_name" translatable="false">Unchained</string>
+    <string name="google" translatable="false">Google</string>
+    <string name="cloudflare" translatable="false">Cloudflare</string>
+    <string name="quad9" translatable="false">Quad9</string>
+    <string name="mullvad" translatable="false">Mullvad</string>
+    <string name="percent_format" translatable="false">%1$.1f%%</string>
+    <string name="loading_auth_link">Loading Authentication…</string>
+    <string name="please_visit">Please visit\u0020</string>
+    <string name="link">Link</string>
+    <string name="using_code">using the code</string>
+    <string name="copy_code">Copy code</string>
+    <string name="code_copied">Code copied to clipboard</string>
+    <string name="or_visit">Or directly visit</string>
+    <string name="waiting_user_auth">Waiting user authorization</string>
+    <string name="obtained_user_auth">Obtained user authorization</string>
+    <string name="waiting_secret">Waiting Secret</string>
+    <string name="waiting_token">Waiting token confirmation</string>
+    <string name="obtained_token">Obtained token</string>
+    <string name="waiting_link">Loading authorization link</string>
+    <string name="link_loaded">Authorization link loaded</string>
+    <string name="premium">Premium</string>
+    <string name="not_premium">Not Premium</string>
+    <string name="premium_points_format">Premium Points: %1$d/1000</string>
+    <string name="premium_days_format">Remaining days: %1$d</string>
+    <string name="user">User</string>
+    <string name="new_download">New Download</string>
+    <string name="remote_traffic">Remote Traffic</string>
+    <string name="password_optional">Password [Optional]</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="unrestrict">Unrestrict</string>
+    <string name="invalid_url">Invalid URL</string>
+    <string name="loading">Loading</string>
+    <string name="copy">Copy</string>
+    <string name="open_link">Open Link</string>
+    <string name="copy_link">Copy Link</string>
+    <string name="link_copied">Link copied</string>
+    <string name="links_copied">Links copied</string>
+    <string name="streaming">Streaming</string>
+    <string name="megabytes_short">MB</string>
+    <string name="file_size_format">%1$d MB</string>
+    <string name="file_size_format_kb">%1$.2f KB</string>
+    <string name="file_size_format_mb">%1$.2f MB</string>
+    <string name="file_size_format_gb">%1$.2f GB</string>
+    <string name="selected_file_size_format">%1$d MB / %2$d MB selected</string>
+    <string name="size_error">Error getting the file size</string>
+    <string name="torrent_status_format">Status: %1$s</string>
+    <string name="speed_format_b">%1$d b/s</string>
+    <string name="speed_format_kb">%1$.1f KB/s</string>
+    <string name="speed_format_mb">%1$.1f MB/s</string>
+    <string name="speed_error">Error getting the download speed</string>
+    <string name="load_streams">Load streams</string>
+    <string name="apple" translatable="false">Apple</string>
+    <string name="dash" translatable="false">Dash</string>
+    <string name="liveMP4" translatable="false">Live MP4</string>
+    <string name="h264_webm" translatable="false">H264 WebM</string>
+    <string name="quality">Quality</string>
+    <string name="links">Links</string>
+    <string name="add_private_token_message">You can also use your private API token from https://real-debrid.com/apitoken, which will allow you to utilize every functionality, such as streaming.</string>
+    <string name="add_private_token">Add Private Token</string>
+    <string name="save">Save</string>
+    <string name="private_token">Private Token</string>
+    <string name="invalid_token">Please check the token value</string>
+    <string name="download_details">Download Details</string>
+    <string name="authenticate">Authenticate</string>
+    <string name="upload_torrent">Upload Torrent</string>
+    <string name="error_loading_torrent">No torrent loaded</string>
+    <string name="link_or_magnet">Link or Magnet</string>
+    <string name="status">Status</string>
+    <string name="magnet_error">Magnet Error</string>
+    <string name="magnet_conversion">Magnet Conversion</string>
+    <string name="waiting_files_selection">Waiting Files Selection</string>
+    <string name="queued">Queued</string>
+    <string name="downloading">Downloading</string>
+    <string name="downloaded">Downloaded</string>
+    <string name="error">Error</string>
+    <string name="virus">Virus</string>
+    <string name="compressing">Compressing</string>
+    <string name="uploading">Uploading</string>
+    <string name="dead">Dead</string>
+    <string name="download">Download</string>
+    <string name="lists">Lists</string>
+    <string name="torrent">Torrent</string>
+    <string name="user_avatar">User Avatar</string>
+    <string name="buy_premium">Buy Premium</string>
+    <string name="paste">Paste</string>
+    <string name="streamable">Streamable</string>
+    <string name="open_stream">Open stream</string>
+    <string name="upload_torrent_description">Upload a .torrent file from your local memory</string>
+    <string name="upload_file_description">Upload a .torrent file or a RSDF, CCF, CCF3, DLC container from your phone</string>
+    <string name="details">Details</string>
+    <string name="file_id_format">ID: %1$s</string>
+    <string name="file_type_format">Type: %1$s</string>
+    <string name="rd_settings_link_description">Manage your user settings, premium state, and convert points from your account page.</string>
+    <string name="settings">Settings</string>
+    <string name="content_description_settings">Settings for the application</string>
+    <string name="about">About</string>
+    <string name="content_description_about">Details about the app</string>
+    <string name="error_unrestricting_download">Error while un-restricting the download</string>
+    <string name="internal_error">Internal error</string>
+    <string name="bad_parameter_value">Bad parameter value</string>
+    <string name="missing_parameter">Missing parameter</string>
+    <string name="unknown_method">Unknown method</string>
+    <string name="method_not_allowed">Method not allowed</string>
+    <string name="slow_down">Slow down</string>
+    <string name="resource_unreachable">Resource unreachable</string>
+    <string name="resource_not_found">Resource not found</string>
+    <string name="bad_token">Bad token</string>
+    <string name="permission_denied">Permission denied</string>
+    <string name="tfa_needed">Two-Factor authentication needed</string>
+    <string name="tfa_pending">Two-Factor authentication pending</string>
+    <string name="invalid_login">Invalid login</string>
+    <string name="invalid_password">Invalid password</string>
+    <string name="account_locked">Account locked</string>
+    <string name="account_not_activated">Account not activated</string>
+    <string name="unsupported_hoster">Unsupported hoster</string>
+    <string name="hoster_in_maintenance">Hoster in maintenance</string>
+    <string name="hoster_limit_reached">Hoster limit reached</string>
+    <string name="hoster_temporarily_unavailable">Hoster temporarily unavailable</string>
+    <string name="hoster_not_available_for_free_users">Hoster not available for free users</string>
+    <string name="too_many_active_downloads">Too many active downloads</string>
+    <string name="ip_Address_not_allowed">IP Address not allowed</string>
+    <string name="traffic_exhausted">Traffic exhausted</string>
+    <string name="file_unavailable">File unavailable</string>
+    <string name="service_unavailable">Service unavailable</string>
+    <string name="upload_too_big">Upload too big</string>
+    <string name="upload_error">Upload error</string>
+    <string name="file_not_allowed">File not allowed</string>
+    <string name="torrent_too_big">Torrent too big</string>
+    <string name="torrent_file_invalid">Torrent file invalid</string>
+    <string name="action_already_done">Action already done</string>
+    <string name="image_resolution_error">Image resolution error</string>
+    <string name="torrent_already_active">Torrent already active</string>
+    <string name="logout">Logout</string>
+    <string name="account_page">Account Page</string>
+    <string name="login_type_open">Logged in with the open token. Some features such as transcoding are unavailable.</string>
+    <string name="login_type_private">Logged in with private token. All features are available.</string>
+    <string name="api_needs_private_token">This function requires a private API token</string>
+    <string name="torrents">Torrents</string>
+    <string name="downloads">Downloads</string>
+    <string name="torrent_not_downloaded">Torrent not ready yet</string>
+    <string name="feedback_summary">Report technical issues or suggest new features</string>
+    <string name="feedback_title">Send feedback</string>
+    <string name="credits_title">Credits</string>
+    <string name="license_title">License</string>
+    <string name="license_gpl" translatable="false">GPL-3.0</string>
+    <string name="terms_title">Terms of use</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="close">Close</string>
+    <string name="credits_text">
+        <![CDATA[
+            <body>
+                <p>
+                    Various projects, resources, and people have helped in the creation of this app. A thank goes to:
+                    <br>
+                    <ul>
+                    <li> Real Debrid people for all their work </li>
+                    <li> @oathzed for testing every nooks and cranny of the app</li>
+                    <li> rawpixel.com for inspiring the logo and symbols with the <a href="https://www.rawpixel.com/image/843352/minimal-logo-designs-set" target="_blank" rel="noopener noreferrer">minimal logo design set</a> </li>
+                    </ul>
+                </p>
+            </body>
+        ]]>
+    </string>
+    <string name="terms_text" translatable="false">
+        <![CDATA[
+            <body>
+                        <p>
+                          By downloading or using the app, these terms will
+                          automatically apply to you – you should make sure therefore
+                          that you read them carefully before using the app. You’re not
+                          allowed to copy, or modify the app, any part of the app, or
+                          our trademarks in any way. You’re not allowed to attempt to
+                          extract the source code of the app, and you also shouldn\'t try
+                          to translate the app into other languages, or make derivative
+                          versions. The app itself, and all the trade marks, copyright,
+                          database rights and other intellectual property rights related
+                          to it, still belong to LivingWithHippos.
+                        </p> <p>
+                          LivingWithHippos is committed to ensuring that the app is
+                          as useful and efficient as possible. For that reason, we
+                          reserve the right to make changes to the app or to charge for
+                          its services, at any time and for any reason. We will never
+                          charge you for the app or its services without making it very
+                          clear to you exactly what you’re paying for.
+                        </p> <p>
+                          The Unchained app stores and processes personal data that
+                          you have provided to us, in order to provide my
+                          Service. It’s your responsibility to keep your phone and
+                          access to the app secure. We therefore recommend that you do
+                          not jailbreak or root your phone, which is the process of
+                          removing software restrictions and limitations imposed by the
+                          official operating system of your device. It could make your
+                          phone vulnerable to malware/viruses/malicious programs,
+                          compromise your phone’s security features and it could mean
+                          that the Unchained app won’t work properly or at all.
+                        </p> <!----> <p>
+                          You should be aware that there are certain things that
+                          LivingWithHippos will not take responsibility for. Certain
+                          functions of the app will require the app to have an active
+                          internet connection. The connection can be Wi-Fi, or provided
+                          by your mobile network provider, but LivingWithHippos
+                          cannot take responsibility for the app not working at full
+                          functionality if you don’t have access to Wi-Fi, and you don’t
+                          have any of your data allowance left.
+                        </p> <p></p> <p>
+                          If you’re using the app outside of an area with Wi-Fi, you
+                          should remember that your terms of the agreement with your
+                          mobile network provider will still apply. As a result, you may
+                          be charged by your mobile provider for the cost of data for
+                          the duration of the connection while accessing the app, or
+                          other third party charges. In using the app, you’re accepting
+                          responsibility for any such charges, including roaming data
+                          charges if you use the app outside of your home territory
+                          (i.e. region or country) without turning off data roaming. If
+                          you are not the bill payer for the device on which you’re
+                          using the app, please be aware that we assume that you have
+                          received permission from the bill payer for using the app.
+                        </p> <p>
+                          Along the same lines, LivingWithHippos cannot always take
+                          responsibility for the way you use the app i.e. You need to
+                          make sure that your device stays charged – if it runs out of
+                          battery and you can’t turn it on to avail the Service,
+                          LivingWithHippos cannot accept responsibility.
+                        </p> <p>
+                          With respect to LivingWithHippos’s responsibility for your
+                          use of the app, when you’re using the app, it’s important to
+                          bear in mind that although we endeavour to ensure that it is
+                          updated and correct at all times, we do rely on third parties
+                          to provide information to us so that we can make it available
+                          to you. LivingWithHippos accepts no liability for any
+                          loss, direct or indirect, you experience as a result of
+                          relying wholly on this functionality of the app.
+                        </p> <p>
+                          At some point, we may wish to update the app. The app is
+                          currently available on Android – the requirements for
+                          system(and for any additional systems we
+                          decide to extend the availability of the app to) may change,
+                          and you’ll need to download the updates if you want to keep
+                          using the app. LivingWithHippos does not promise that it
+                          will always update the app so that it is relevant to you
+                          and/or works with the Android version that you have
+                          installed on your device. However, you promise to always
+                          accept updates to the application when offered to you, We may
+                          also wish to stop providing the app, and may terminate use of
+                          it at any time without giving notice of termination to you.
+                          Unless we tell you otherwise, upon any termination, (a) the
+                          rights and licenses granted to you in these terms will end;
+                          (b) you must stop using the app, and (if needed) delete it
+                          from your device.
+                        </p> <p><strong>Changes to This Terms and Conditions</strong></p> <p>
+                          I may update our Terms and Conditions
+                          from time to time. Thus, you are advised to review this page
+                          periodically for any changes. I will
+                          notify you of any changes by posting the new Terms and
+                          Conditions on this page.
+                        </p> <p>
+                          These terms and conditions are effective as of 2020-09-23
+                        </p> <p><strong>Contact Us</strong></p> <p>
+                          If you have any questions or suggestions about my
+                          Terms and Conditions, do not hesitate to contact me
+                          at livingwithhippos@gmail.com.
+                        </p> <p>
+                          This Terms and Conditions page was generated by
+                          <a href="https://app-privacy-policy-generator.firebaseapp.com/" target="_blank" rel="noopener noreferrer">App Privacy Policy Generator</a></p>
+            </body>
+    ]]>
+    </string>
+    <string name="privacy_text" translatable="false">
+        <![CDATA[
+        <body>
+    <strong>Privacy Policy</strong> <p>
+                  LivingWithHippos built the Unchained app as
+                  an Open Source app. This SERVICE is provided by
+                  LivingWithHippos at no cost and is intended for use as
+                  is.
+                </p> <p>
+                  This page is used to inform visitors regarding my
+                  policies with the collection, use, and disclosure of Personal
+                  Information if anyone decided to use my Service.
+                </p> <p>
+                  If you choose to use my Service, then you agree to
+                  the collection and use of information in relation to this
+                  policy. The Personal Information that I collect is
+                  used for providing and improving the Service. I will not use or share your information with
+                  anyone except as described in this Privacy Policy.
+                </p> <p>
+                  The terms used in this Privacy Policy have the same meanings
+                  as in our Terms and Conditions, which is accessible at
+                  Unchained unless otherwise defined in this Privacy Policy.
+                </p> <p><strong>Information Collection and Use</strong></p> <p>
+                  For a better experience, while using our Service, I
+                  may require you to provide us with certain personally
+                  identifiable information. The information that
+                  I request will be retained on your device and is not collected by me in any way.
+                </p> <!----> <p><strong>Log Data</strong></p> <p>
+                  I want to inform you that whenever you
+                  use my Service, in a case of an error in the app
+                  no data is collected. It just crashes!
+                </p> <p><strong>Cookies</strong></p> <p>
+                  Cookies are files with a small amount of data that are
+                  commonly used as anonymous unique identifiers. These are sent
+                  to your browser from the websites that you visit and are
+                  stored on your device\'s internal memory.
+                </p> <p>
+                  This Service does not use these “cookies” explicitly. However,
+                  the app may use third party code and libraries that use
+                  “cookies” to collect information and improve their services.
+                  You have the option to either accept or refuse these cookies
+                  and know when a cookie is being sent to your device. If you
+                  choose to refuse our cookies, you may not be able to use some
+                  portions of this Service.
+                </p> <p><strong>Service Providers</strong></p> <p>
+                  I may employ third-party companies and
+                  individuals due to the following reasons:
+                </p> <ul><li>To facilitate our Service;</li> <li>To provide the Service on our behalf;</li> <li>To perform Service-related services; or</li> <li>To assist us in analyzing how our Service is used.</li></ul> <p>
+                  I want to inform users of this Service
+                  that these third parties have access to your Personal
+                  Information. The reason is to perform the tasks assigned to
+                  them on our behalf. However, they are obligated not to
+                  disclose or use the information for any other purpose.
+                </p> <p><strong>Security</strong></p> <p>
+                  I value your trust in providing us your
+                  Personal Information, thus we are striving to use commercially
+                  acceptable means of protecting it. But remember that no method
+                  of transmission over the internet, or method of electronic
+                  storage is 100%% secure and reliable, and I cannot
+                  guarantee its absolute security.
+                </p> <p><strong>Links to Other Sites</strong></p> <p>
+                  This Service may contain links to other sites. If you click on
+                  a third-party link, you will be directed to that site. Note
+                  that these external sites are not operated by me.
+                  Therefore, I strongly advise you to review the
+                  Privacy Policy of these websites. I have
+                  no control over and assume no responsibility for the content,
+                  privacy policies, or practices of any third-party sites or
+                  services.
+                </p> <p><strong>Children’s Privacy</strong></p> <p>
+                  These Services do not address anyone under the age of 13.
+                  I do not knowingly collect personally
+                  identifiable information from children under 13. In the case
+                  I discover that a child under 13 has provided
+                  me with personal information, I immediately
+                  delete this from our servers. If you are a parent or guardian
+                  and you are aware that your child has provided us with
+                  personal information, please contact me so that
+                  I will be able to do necessary actions.
+                </p> <p><strong>Changes to This Privacy Policy</strong></p> <p>
+                  I may update our Privacy Policy from
+                  time to time. Thus, you are advised to review this page
+                  periodically for any changes. I will
+                  notify you of any changes by posting the new Privacy Policy on
+                  this page.
+                </p> <p>This policy is effective as of 2020-09-23</p> <p><strong>Contact Us</strong></p> <p>
+                  If you have any questions or suggestions about my
+                  Privacy Policy, do not hesitate to contact me at livingwithhippos@gmail.com.
+                </p> <p>
+                  This privacy policy page was created at
+                  <a href="https://privacypolicytemplate.net" target="_blank" rel="noopener noreferrer">privacypolicytemplate.net</a>
+                  and modified/generated by
+                  <a href="https://app-privacy-policy-generator.firebaseapp.com/" target="_blank" rel="noopener noreferrer">App Privacy Policy Generator</a></p>
+    </body>
+    ]]>
+    </string>
+    <string name="premium_needed">Premium subscription required</string>
+    <string name="downloading_torrent">Preparing torrent, please wait…</string>
+    <string name="please_insert_url">Please insert a magnet or a link</string>
+    <string name="please_login">Please log in your account</string>
+    <string name="loading_magnet_link">Loading magnet link…</string>
+    <string name="loading_torrent_file">Loading torrent file…</string>
+    <string name="unchained_torrent_download">Unchained Torrent Download</string>
+    <string name="unchained_plugin_download">Unchained Plugin Download</string>
+    <string name="temporary_torrent_download">Temporary download of a torrent file</string>
+    <string name="temporary_plugin_download">Temporary download of a plugin file</string>
+    <string name="error_loading_dialog">Error loading the dialog, please reopen it.</string>
+    <string name="title_theme_preference">Theme</string>
+    <string name="automatic">Automatic</string>
+    <string name="night">Night</string>
+    <string name="day">Day</string>
+    <string name="title_various">Various</string>
+    <string name="original">Original</string>
+    <string name="night_theme">Night mode</string>
+    <string name="title_aspect">Aspect</string>
+    <string name="delete">Delete</string>
+    <string name="delete_item_title_format">Delete %s</string>
+    <string name="torrent_removed">Torrent removed</string>
+    <string name="open">Open</string>
+    <string name="content_description_delete_torrent_item">Remove the torrent item</string>
+    <string name="content_description_delete_download_item">Remove the download item</string>
+    <string name="torrent_details">Torrent Details</string>
+    <string name="download_removed">Download removed</string>
+    <string name="press_again_exit">Press back again to exit</string>
+    <string name="content_description_share_download">Share download link</string>
+    <string name="share">Share</string>
+    <string name="share_with">Share download link via:</string>
+    <string name="share_all_with">Share all download links via:</string>
+    <string name="restart_to_apply">Restart to apply</string>
+    <string name="remove">Remove</string>
+    <string name="confirm_download_removal_description">Are you sure you want to remove the download? This action cannot be undone.</string>
+    <string name="yes_remove">Yes, remove it</string>
+    <string name="confirm_torrent_removal_description">Are you sure you want to remove the torrent? This action cannot be undone.</string>
+    <string name="confirm_item_removal_description">Are you sure you want to remove this item? The action cannot be undone.</string>
+    <string name="confirm_removal">Confirm removal</string>
+    <string name="multiple_links_warning">This torrent has multiple links. Check the downloads list to find all of them.</string>
+    <string name="theme_day_support">This theme supports only the day mode</string>
+    <string name="app_not_installed">App not installed. Check your settings.</string>
+    <string name="limitations">Error: your phone is limiting background activity.</string>
+    <string name="open_link_format">Open %1$s link</string>
+    <string name="copy_link_format">Copy %1$s link </string>
+    <string name="open_with_format">Open %1$s with Kodi</string>
+    <string name="yatse" translatable="false">Yatse</string>
+    <string name="loading_host_link">Loading host link</string>
+    <string name="title_debugging">Debug</string>
+    <string name="update_regexps">Update hosts link matcher</string>
+    <string name="updating_link_matcher">Updating link matcher…</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="network_error">Network error</string>
+    <string name="torrent_channel_description">Notification channel for torrents download status</string>
+    <string name="torrent_in_progress">Torrent download in progress</string>
+    <plurals name="seeders_format">
+        <item quantity="zero">% seeders</item>
+        <item quantity="one">%d seeder</item>
+        <item quantity="other">%d seeders</item>
+        <item quantity="many">%d seeders</item>
+    </plurals>
+    <string name="seeders_string_format">seeder/s: %s</string>
+    <string name="torrent_in_progress_format">%1$.2f%% - %2$.2f MB/s</string>
+    <string name="download_in_progress_format">Downloading - %1$d%%</string>
+    <string name="download_complete">Download complete</string>
+    <string name="unknown_status">Unknown Status</string>
+    <string name="downloading_torrent_format">Downloading %1$d torrents</string>
+    <string name="monitor_torrents_download">Monitoring torrents download</string>
+    <string name="notifications">Notifications</string>
+    <string name="enable_torrent_monitoring_title">Enable torrent monitoring</string>
+    <string name="alternative_link">Alternative link</string>
+    <string name="parsing_error">Error parsing the server response</string>
+    <string name="content_description_search">Filter the lists</string>
+    <string name="search">Search</string>
+    <string name="loading_torrent">Loading torrent</string>
+    <string name="referral">Referral</string>
+    <string name="referral_summary">Use a referral when clicking on the account page button</string>
+    <string name="decline">Decline</string>
+    <string name="accept">Accept</string>
+    <string name="referral_proposal">You can support this app by navigating to your account page by using a referral link. We\'ll bother you only once; you can change your choice in the settings.</string>
+    <string name="to_authenticate">\u0020to get authenticated\u0020</string>
+    <string name="this_link">this link</string>
+    <string name="login_message_placeholder">Please visit this link to get authenticated</string>
+    <string name="host_match_not_found">No matching host found. Refresh hosts from settings if needed.</string>
+    <string name="refreshing_token">Refreshing authentication, please retry in a bit</string>
+    <string name="black_and_white">Black and white</string>
+    <string name="waves_01" translatable="false">Waves 01</string>
+    <string name="open_browser_stream">Stream in browser</string>
+    <string name="folder">Folder</string>
+    <string name="files_list">Files List</string>
+    <string name="error_loading_folder">Some links couldn\'t be loaded</string>
+    <string name="plugin">Plugin</string>
+    <string name="search_files">Search Files</string>
+    <string name="magnet">Magnet</string>
+    <string name="error_loading_file">Error loading file</string>
+    <string name="category">Category</string>
+    <string name="category_all">All</string>
+    <string name="category_anime">Anime</string>
+    <string name="category_software">Software</string>
+    <string name="category_games">Games</string>
+    <string name="category_movies">Movies</string>
+    <string name="category_music">Music</string>
+    <string name="category_tv">TV shows</string>
+    <string name="category_books">Books</string>
+    <string name="open_github">Open Github</string>
+    <string name="plugin_description_message">On this screen you\'ll be able to search for torrent and magnet files. Aside from the basic plugins available, you can download more from the manage page.</string>
+    <string name="search_plugins">Search Plugins</string>
+    <string name="get_search_plugins">Get search plugins</string>
+    <string name="delete_plugins">Delete plugins</string>
+    <string name="delete_plugins_summary">Remove all the plugins installed by the user</string>
+    <string name="plugin_removed">%1$d plugin/s removed</string>
+    <string name="plugin_install_error_newer">The plugin is already installed with a newer version</string>
+    <string name="plugin_install_installed">Plugin installed</string>
+    <string name="plugin_install_not_installed">Plugin not installed</string>
+    <string name="plugin_install_incompatible">Plugin version not compatible</string>
+    <string name="no_links">No links</string>
+    <plurals name="magnet_format">
+        <item quantity="zero">%d magnets</item>
+        <item quantity="one">%d magnet</item>
+        <item quantity="other">%d magnets</item>
+        <item quantity="many">%d magnets</item>
+    </plurals>
+    <plurals name="torrent_format">
+        <item quantity="zero">%d torrents</item>
+        <item quantity="one">%d torrent</item>
+        <item quantity="other">%d torrents</item>
+        <item quantity="many">%d torrents</item>
+    </plurals>
+    <plurals name="links_format">
+        <item quantity="zero">No links</item>
+        <item quantity="one">1 link</item>
+        <item quantity="other">%d links</item>
+        <item quantity="many">%d links</item>
+    </plurals>
+    <plurals name="plugins_version_old_format">
+        <item quantity="zero">No plugins needing an update</item>
+        <item quantity="one">1 plugin needs an update. Check for a new version</item>
+        <item quantity="other">%d plugins need an update. Check for a new version</item>
+        <item quantity="many">%d plugins need an update. Check for a new version</item>
+    </plurals>
+    <string name="n_plugins_installed">%d plugins installed. Restart the app to use them.</string>
+    <string name="seeders_short_format" translatable="false">S: %s</string>
+    <string name="leechers_short_format" translatable="false">L: %s</string>
+    <string name="size_format">size: %s</string>
+    <string name="leechers_string_format">leecher/s: %s</string>
+    <string name="delete_all">Delete all</string>
+    <string name="delete_all_downloads_message">Are you sure you want to delete all your downloads? This action cannot be undone.</string>
+    <string name="delete_all_torrents_message">Are you sure you want to delete all your torrents? This action cannot be undone.</string>
+    <string name="torrents_removed">Torrents removed</string>
+    <string name="removing_torrents">Removing torrents…</string>
+    <string name="downloads_removed">Downloads removed</string>
+    <string name="removing_downloads">Removing downloads…</string>
+    <string name="version">Version</string>
+    <string name="download_started">Download started, check the notification bar</string>
+    <string name="download_not_started">Error during download initialization</string>
+    <string name="download_not_started_format">Error initializing download of %s</string>
+    <string name="multiple_downloads_enqueued_format">%1$d out of %2$d downloads enqueued correctly</string>
+    <string name="needs_download_permission">Unchained needs the storage permission to download files directly</string>
+    <string name="kodi" translatable="false">Kodi</string>
+    <string name="test_connection">Test the connection</string>
+    <string name="kodi_credentials_incomplete">At least IP and port are required for Kodi</string>
+    <string name="ip_address">IP address</string>
+    <string name="port">Port</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="kodi_connection_successful">Kodi connection successful</string>
+    <string name="kodi_connection_error">Kodi connection error</string>
+    <string name="port_range_error">Port must be between 1 and 65535</string>
+    <string name="kodi_configure_credentials">Please configure Kodi in the app settings</string>
+    <string name="kodi_remote_control">Kodi remote control instructions</string>
+    <string name="enable_kodi_control">Tap here for instructions on how to set up Kodi for remote control (usually enabled in system->services->control)</string>
+    <string name="only_if_auth">Required only if the authentication is enabled in Kodi</string>
+    <string name="rd_status">Real Debrid status</string>
+    <string name="show_kodi">Show Kodi button</string>
+    <string name="only_big_files">Only big files</string>
+    <string name="filter_type">Only media files</string>
+    <string name="sort">Sort</string>
+    <string name="file_size_filter">Filter for the files size</string>
+    <string name="file_size_filter_description">Minimum size in MB for the \"Only big files\" option in the folder screen</string>
+    <string name="container">Container</string>
+    <string name="error_parsing_container">Error parsing the container</string>
+    <string name="loading_container_file">Loading container file…</string>
+    <string name="no_network_connection">No network connection</string>
+    <string name="download_all">Download All</string>
+    <string name="sending_crash_report">Unchained just crashed.\nSending crash report…</string>
+    <string name="upload">Upload</string>
+    <string name="unsupported_file">File not supported</string>
+    <string name="hoster">Hoster</string>
+    <string name="retry_login">Retry</string>
+    <string name="generic_login_error">An error occurred during login. You can check your connection, try again in a while, or log in from real-debrid.com for more information.</string>
+    <string name="retry_later">Retry later</string>
+    <string name="content_description_plugins_link">Link to plugins page</string>
+    <string name="get_plugins">Get more plugins</string>
+    <string name="reset_login">Reset login</string>
+    <string name="default_string">Default</string>
+    <string name="sort_by_az">Alphabetical</string>
+    <string name="sort_by_za">Reverse alphabetical</string>
+    <string name="sort_by_size_desc">Bigger first</string>
+    <string name="sort_by_size_asc">Smaller first</string>
+    <string name="share_all">Share all</string>
+    <string name="copy_all">Copy all</string>
+    <string name="enable_doh">Enable DNS over HTTPS</string>
+    <string name="pick_doh_provider">Pick a DNS over HTTPS provider</string>
+    <string name="doh" translatable="false">DNS over HTTPS</string>
+    <string name="doh_description_message">DNS over HTTPS is a protocol used to increase privacy and avoid eavesdropping of DNS requests. If a plugin\'s website is blocked at DNS level, enabling DOH can help bypass this. The DOH only provider available at the moment is  Google. This option is disabled by default and it can be changed anytime from the settings menu. This feature may cause crashes.</string>
+    <string name="disable">Disable</string>
+    <string name="enable">Enable</string>
+    <string name="download_selected">Download selected</string>
+    <string name="delete_selected">Delete selected</string>
+    <string name="share_selected">Share selected</string>
+    <string name="show_folder_filters">Show folder filters</string>
+    <string name="show_folder_filters_summary">Show the filters for files size and media type in the folder screen</string>
+    <string name="title_main_screen">Start-up Screen</string>
+    <string name="summary_main_screen">Tab to open at start-up</string>
+    <string name="title_search_start_destination">Search start screen</string>
+    <string name="summary_search_start_destination">Page to open when entering the Search tab</string>
+    <string name="new_string">New</string>
+    <string name="select_deselect_all">Select or deselect all</string>
+    <string name="select_one_item">Select at least one item</string>
+    <string name="torrent_monitoring_description">Monitor your torrents being downloaded on Real-Debrid servers.</string>
+    <string name="kodi_manage_list">Manage Kodi Devices</string>
+    <string name="kodi_manage_list_summary">Add or edit a connection to a Kodi device, and choose the default one.</string>
+    <string name="add_device">Add Device</string>
+    <string name="set_as_default">Set as default</string>
+    <string name="new_device">Add New Device</string>
+    <string name="fields_required">Fields marked with * are required</string>
+    <string name="name_required">Name *</string>
+    <string name="address_required">Address *</string>
+    <string name="port_required">Port *</string>
+    <string name="device_added">Device added</string>
+    <string name="test">Test</string>
+    <string name="save_device">Save Device</string>
+    <string name="update_device">Update Device</string>
+    <string name="kodi_missing_default">The default Kodi device is not set</string>
+    <string name="device_deleted">Device deleted</string>
+    <string name="ui_settings">UI Settings</string>
+    <string name="player_vlc" translatable="false">VLC</string>
+    <string name="player_mx" translatable="false">MX Player</string>
+    <string name="show_media_player_button_summary">Show the button to send the media to an installed player</string>
+    <string name="show_media_player_button">Show media button</string>
+    <string name="default_media_player">Default media player</string>
+    <string name="send_to_player">Send to player</string>
+    <string name="missing_default_player">Set the default media player in settings</string>
+    <string name="ui_settings_summary">Choose how and if things are shown</string>
+    <string name="download_details_button_choice">Choose which buttons should be shown in the download details screen</string>
+    <string name="external_apps">External applications</string>
+    <string name="show_share_button">Show share button</string>
+    <string name="show_open_button">Show open button</string>
+    <string name="show_copy_button">Show copy button</string>
+    <string name="show_download_button">Show download button</string>
+    <string name="show_load_stream_button">Show load stream button</string>
+    <string name="show_stream_browser_button">Show stream in browser button</string>
+    <string name="install_plugins">Install plugins</string>
+    <string name="install_plugins_summary">Use the manage repository button in the search screen menu to install the plugins</string>
+    <string name="custom_media_player">Custom media player</string>
+    <string name="custom_media_player_summary">Use a custom media player package like \"org.videolan.vlc\". It may support direct sharing of media files. Remember to pick \"custom player\" as default media player preference</string>
+    <string name="invalid_package">Invalid package</string>
+    <string name="delete_all_downloads">Delete all downloads</string>
+    <string name="delete_all_torrents">Delete all torrents</string>
+    <string name="fdroid_update_description">A new app version has been found on F-Droid</string>
+    <string name="playstore_update_description">A newer app version has been found on the Play Store</string>
+    <string name="github_update_description">A new app version has been found on Github</string>
+    <string name="new_update">Update available</string>
+    <string name="seeders">Seeders</string>
+    <string name="no_supported_player_found">No app supporting this media was found. Try with the share button.</string>
+    <string name="browser_not_found">No browser app found</string>
+    <string name="directory_picked">Directory saved. Start the download again.</string>
+    <string name="download_permission_granted">Permissions granted, Start the download again.</string>
+    <string name="stop">Stop</string>
+    <string name="stopped">Stopped</string>
+    <string name="paused">Paused</string>
+    <string name="restart">Restart</string>
+    <string name="download_channel_description">Notification channel for downloads status</string>
+    <string name="download_queued">Download queued, check your notifications</string>
+    <string name="download_queued_error">Error queuing download, check permissions</string>
+    <string name="pick_download_folder">Pick Download Folder</string>
+    <string name="pick_download_folder_description">Choose a folder for the downloads. Not available for the default system download manager</string>
+    <string name="download_manager">Download manager</string>
+    <string name="download_manager_description">Choose how to download files</string>
+    <string name="download_link_expired">Network issues or download link expired. Generate another one.</string>
+    <string name="custom_downloader_options">Custom downloader options</string>
+    <string name="custom_downloader_options_description">These options are not available for the default download manager</string>
+    <string name="unmetered_downloads">Downloads on unmetered connections</string>
+    <string name="unmetered_downloads_description">Start downloads only on unmetered connection (such as wi-fi)</string>
+    <string name="download_on_metered_connection">Download delayed (metered connection)</string>
+    <string name="leechers">Leechers</string>
+    <string name="size">Size</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="ready">Ready</string>
+    <string name="select_files">Select files</string>
+    <string name="total_files">Total files</string>
+    <string name="total_size">Total size</string>
+    <string name="loading_torrent_info">Loading torrent files. Use the download all button on the bottom if you want to download all the content.</string>
+    <string name="selecting_all_files">Selecting all files, please wait…</string>
+    <string name="download_selected_files">Download selected files</string>
+    <string name="pass_to_download">Pass to downloads</string>
+    <string name="notifications_permission_denied">Permission denied. The app may have issue displaying notifications.</string>
+    <string name="notifications_permission_granted">Notifications permission granted</string>
+    <string name="content_description_reselect_torrent_files">Reselect the torrent files</string>
+    <string name="reselect_torrent_files">Reselect files</string>
+    <string name="selected_files">Selected files</string>
+    <string name="selected_size">Selected size</string>
+    <string name="selecting_picked_files">Selecting %1$d files, please wait…</string>
+    <string name="download_manager_system">Default download manager</string>
+    <string name="single_torrent_file_available">Only available file automatically selected</string>
+    <string name="update_plugins">Update plugins</string>
+    <string name="reload">Reload</string>
+    <string name="update">Update</string>
+    <string name="new_word">New</string>
+    <string name="not_compatible">Not compatible</string>
+    <string name="checking_plugins">Checking plugins…</string>
+    <string name="manage_plugins">Manage plugins</string>
+    <string name="repository">Repository</string>
+    <string name="updated">Updated</string>
+    <string name="incompatible">Incompatible</string>
+    <string name="incompatible_update">Incompatible update available</string>
+    <string name="plugin_removal_failed">Error uninstalling the plugin</string>
+    <string name="install_all">Install all</string>
+    <string name="uninstall_all">Uninstall all</string>
+    <string name="update_all">Update all</string>
+    <string name="uninstall_repo">Uninstall repository</string>
+    <string name="plugins_installed_format">Installed %1$d plugins</string>
+    <string name="plugins_install_results_format">%1$d plugins installed, %2$d errors</string>
+    <string name="user_logged_out">User logged out, please restart the app</string>
+    <string name="manually_installed_plugins">Manually installed plugins</string>
+    <string name="manually_installed_plugins_description">Plugins installed by the user without using an online repository</string>
+    <string name="various">Various</string>
+    <string name="connection_successful">Connection successful</string>
+    <string name="category_art">Art</string>
+    <string name="category_doujinshi">Doujinshi</string>
+    <string name="category_manga">Manga</string>
+    <string name="category_pictures">Pictures</string>
+    <string name="category_videos">Videos</string>
+    <string name="vibrate_on_download">Vibrate on downloads completion</string>
+    <string name="kodi_picker">Select destination server</string>
+    <string name="kodi_picker_description">Show a selection menu when sending links to Kodi</string>
+    <string name="themes">Themes</string>
+    <string name="select">Select</string>
+    <string name="selected_theme">Selected theme</string>
+    <string name="apply">Apply</string>
+    <string name="copy_magnet">Copy Magnet</string>
+    <string name="share_magnet">Share Magnet</string>
+    <string name="remote_devices">Remote Devices</string>
+    <string name="remote_devices_summary">Manage services such as Kodi and VLC running on different devices</string>
+    <string name="manage_remote_devices">Manage Remote Devices</string>
+    <string name="delete_services">Delete Services</string>
+    <string name="new_service">New Service</string>
+    <string name="remote_device">Remote Device</string>
+    <string name="jackett" translatable="false">Jackett</string>
+    <string name="service_deleted">Service deleted</string>
+    <string name="service_stopped">Service has been stopped</string>
+    <string name="service">Service</string>
+    <string name="services">Services</string>
+    <plurals name="services_format">
+        <item quantity="zero">%d services</item>
+        <item quantity="one">%d service</item>
+        <item quantity="other">%d services</item>
+        <item quantity="many">%d services</item>
+    </plurals>
+    <string name="dialog_confirm_action">Are you sure you want to proceed?</string>
+    <string name="pick_service">Pick Service</string>
+    <string name="default_service">Default Service</string>
+    <string name="transcoding">Transcoding</string>
+    <string name="recent">Recent</string>
+    <string name="browser">Browser</string>
+    <string name="add">Add</string>
+    <string name="show_streaming">Show streaming button</string>
+    <string name="connection_error">Connection error</string>
+    <plurals name="service_number_format">
+        <item quantity="zero">%1$d services</item>
+        <item quantity="one">1 service</item>
+        <item quantity="other">%1$d services</item>
+        <item quantity="many">%1$d services</item>
+    </plurals>
+    <plurals name="device_number_format">
+        <item quantity="zero">No devices</item>
+        <item quantity="one">1 device</item>
+        <item quantity="other">%1$d devices</item>
+        <item quantity="many">%1$d devices</item>
+    </plurals>
+    <string name="recent_service_format">Recent: %s</string>
+    <string name="default_service_format">Default: %s</string>
+    <string name="added_date">Date</string>
+    <string name="loading_size">Loading size</string>
+    <string name="summary_loading_size">How many items should be loaded at once from the downloads and torrents sections? Larger numbers may result in slower loading.</string>
+    <string name="refresh">Refresh</string>
+    <string name="api_token">API token</string>
+    <string name="pick_search_type">Pick a search type</string>
+    <string name="plugin_search_description">Use community-created plugins specifically for Unchained. This is the default method if you don\'t know what to choose.</string>
+    <string name="plugins">Plugins</string>
+    <string name="services_search_description">Use services such as Jackett, Prowlarr or any Torznab app.</string>
+    <string name="all">all</string>
+    <string name="search_options">Search Options</string>
+    <string name="infringing_file">Infringing file locked</string>
+    <string name="too_many_requests">Too many requests</string>
+    <string name="usage_limit_reached">Usage limit reached</string>
+    <string name="devices">Devices</string>
+    <string name="remote_devices_services_description">Remote devices are computers, TVs, or phones on which services like Kodi and VLC are running. First, create a device to add one or more services.</string>
+    <string name="no_credentials_found">No credentials found</string>
+    <string name="invalid_player_found">The app that tried opening this link is bugged, install another player</string>
+    <string name="complete_address">Complete address with port</string>
+    <string name="remote_services_description">Services are programs running on computers used to search for files or play media</string>
+    <string name="service_added">Service Added</string>
+    <string name="please_select_plugins">Please select at least a plugin</string>
+    <string name="disabled">Disabled</string>
+    <string name="prowlarr" translatable="false">Prowlarr</string>
+</resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/download_all"
+        android:contentDescription="@string/download_all"
+        android:icon="@drawable/icon_download"
+        android:title="@string/download_all"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/share_all"
+        android:contentDescription="@string/share_all"
+        android:icon="@drawable/icon_share"
+        android:title="@string/share_all"
+        app:showAsAction="withText" />
+
+    <item
+        android:id="@+id/copy_all"
+        android:contentDescription="@string/copy_all"
+        android:icon="@drawable/icon_copy"
+        android:title="@string/copy_all"
+        app:showAsAction="withText" />
+
+</menu>

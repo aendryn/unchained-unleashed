@@ -1,0 +1,30 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Unchained.Material3" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="appBarLayoutStyle">@style/Widget.App.AppBarLayout</item>
+        <item name="toolbarStyle">@style/Widget.App.Toolbar</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        <!-- this can be used to customize backgrounds with images, otherwise it will use the default android:colorBackground value -->
+        <item name="mainBackground">@drawable/bg_solid</item>
+    </style>
+
+
+    <!-- android system top bar with notifications etc. -->
+    <style name="Widget.App.AppBarLayout" parent="Widget.Material3.AppBarLayout">
+        <item name="android:background">?attr/colorPrimary</item>
+    </style>
+
+    <!-- application top bar with screen title, context menu etc. -->
+    <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Toolbar</item>
+        <item name="titleTextColor">?attr/colorOnPrimary</item>
+    </style>
+
+    <style name="ThemeOverlay.App.Toolbar" parent="">
+        <!-- icon color -->
+        <item name="colorControlNormal">?attr/colorOnPrimary</item>
+    </style>
+
+    <!-- dark themes list. Only those with custom fields different from the light version association need to be here -->
+
+</resources>

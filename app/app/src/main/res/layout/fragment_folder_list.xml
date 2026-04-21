@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".folderlist.view.FolderListFragment">
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/progressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:trackThickness="7dp" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:text="@string/files_list"
+        app:layout_constraintBottom_toTopOf="@id/tfFilter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/progressIndicator" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tfFilter"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:hint="@string/search"
+        android:importantForAutofill="no"
+        android:nextFocusDown="@id/cbFilterSize"
+        app:endIconMode="clear_text"
+        app:layout_constraintBottom_toTopOf="@+id/cbFilterSize"
+        app:layout_constraintEnd_toStartOf="@id/sortingButton"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:startIconDrawable="@drawable/icon_search">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tiFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/sortingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="20dp"
+        android:contentDescription="@string/sort"
+        android:nextFocusRight="@id/cbFilterSize"
+        android:nextFocusDown="@id/cbFilterSize"
+        app:layout_constraintBottom_toBottomOf="@id/tfFilter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/tfFilter"
+        app:layout_constraintTop_toTopOf="@id/tfFilter"
+        app:srcCompat="@drawable/icon_sort_default" />
+
+    <CheckBox
+        android:id="@+id/cbFilterSize"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:checked="false"
+        android:nextFocusRight="@id/cbFilterType"
+        android:nextFocusUp="@id/tfFilter"
+        android:nextFocusDown="@id/cbSelectAll"
+        android:text="@string/only_big_files"
+        app:layout_constraintBottom_toTopOf="@+id/llMultiSelection"
+        app:layout_constraintEnd_toStartOf="@+id/cbFilterType"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tfFilter" />
+
+    <CheckBox
+        android:id="@+id/cbFilterType"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="20dp"
+        android:checked="false"
+        android:nextFocusLeft="@id/cbFilterSize"
+        android:nextFocusUp="@id/tfFilter"
+        android:nextFocusDown="@id/cbSelectAll"
+        android:text="@string/filter_type"
+        app:layout_constraintBottom_toTopOf="@+id/llMultiSelection"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/cbFilterSize"
+        app:layout_constraintTop_toBottomOf="@+id/tfFilter" />
+
+    <LinearLayout
+        android:id="@+id/llMultiSelection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        app:layout_constraintBottom_toTopOf="@id/llList"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cbFilterSize">
+
+        <CheckBox
+            android:id="@+id/cbSelectAll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:nextFocusLeft="@id/cbFilterType"
+            android:nextFocusRight="@id/bDeleteSelected"
+            android:nextFocusUp="@id/cbFilterSize"
+            android:nextFocusDown="@id/rvFolderList"
+            android:text="0"
+            android:tooltipText="@string/select_deselect_all" />
+
+        <Button
+            android:id="@+id/bDeleteSelected"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/delete"
+            android:nextFocusLeft="@id/cbSelectAll"
+            android:nextFocusRight="@id/bDownloadSelected"
+            android:nextFocusUp="@id/cbFilterSize"
+            android:nextFocusDown="@id/rvFolderList"
+            android:tooltipText="@string/delete_selected"
+            app:icon="@drawable/icon_delete" />
+
+        <Button
+            android:id="@+id/bDownloadSelected"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/download"
+            android:nextFocusLeft="@id/bDeleteSelected"
+            android:nextFocusRight="@id/bShareSelected"
+            android:nextFocusUp="@id/cbFilterSize"
+            android:nextFocusDown="@id/rvFolderList"
+            android:tooltipText="@string/download_selected"
+            app:icon="@drawable/icon_download" />
+
+        <Button
+            android:id="@+id/bShareSelected"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/share"
+            android:nextFocusLeft="@id/bDownloadSelected"
+            android:nextFocusRight="@id/rvFolderList"
+            android:nextFocusUp="@id/cbFilterSize"
+            android:nextFocusDown="@id/rvFolderList"
+            android:tooltipText="@string/share_selected"
+            app:icon="@drawable/icon_share" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/llMultiSelection">
+
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="20dp"
+            android:text="@string/error_loading_folder"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvFolderList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_horizontal"
+            android:nextFocusUp="@id/cbSelectAll"
+            android:scrollbars="vertical"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_list_download" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

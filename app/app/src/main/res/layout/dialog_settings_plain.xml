@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvHeader"
+        android:textAppearance="?attr/textAppearanceTitleMedium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:background="?attr/colorPrimary"
+        android:textAllCaps="true"
+        android:textAlignment="center"
+        android:textColor="?attr/colorOnPrimary"
+        android:layout_gravity="center" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/tvMessage"
+            android:textAppearance="?attr/textAppearanceBodyLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="10dp"
+            android:autoLink="web|email"
+            android:textAlignment="center"
+            android:padding="10dp" />
+
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>
