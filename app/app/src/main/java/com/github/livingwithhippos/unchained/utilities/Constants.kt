@@ -8,6 +8,14 @@ const val OPEN_SOURCE_GRANT_TYPE = "http://oauth.net/grant_type/device/1.0"
 
 const val BASE_URL = "https://api.real-debrid.com/rest/1.0/"
 const val BASE_AUTH_URL = "https://api.real-debrid.com/oauth/v2/"
+
+// TorBox. Endpoints are shaped as {BASE}/{version}/api/... e.g.
+// https://api.torbox.app/v1/api/torrents/mylist
+const val TORBOX_BASE_URL = "https://api.torbox.app/"
+const val TORBOX_API_VERSION = "v1"
+const val TORBOX_ACCOUNT_LINK = "https://torbox.app/settings"
+// where the user finds/copies their permanent API key
+const val TORBOX_API_KEY_LINK = "https://torbox.app/settings"
 const val REFERRAL_LINK = "http://real-debrid.com/?id=78841"
 const val ACCOUNT_LINK = "https://real-debrid.com/account"
 const val DEFAULT_PLUGINS_REPOSITORY_LINK =

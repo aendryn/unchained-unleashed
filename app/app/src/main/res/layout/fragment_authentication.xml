@@ -200,10 +200,60 @@
             android:nextFocusLeft="@id/tfPrivateCode"
             android:nextFocusUp="@id/tfPrivateCode"
             android:text="@string/save"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/tvUseTorBox"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tfPrivateCode" />
+
+        <TextView
+            android:id="@+id/tvUseTorBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="30dp"
+            android:gravity="center"
+            android:text="@string/torbox_login_message"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/bInsertPrivate" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tfTorBoxKey"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="30dp"
+            android:focusable="true"
+            android:hint="@string/torbox_api_key_title"
+            android:importantForAutofill="no"
+            app:endIconMode="clear_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvUseTorBox"
+            app:layout_constraintWidth_max="600dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/tiTorBoxKey"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:singleLine="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/bInsertTorBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:text="@string/torbox_connect_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tfTorBoxKey" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

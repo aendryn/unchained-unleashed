@@ -19,6 +19,8 @@ sealed class FSMAuthenticationState {
 
     data object AuthenticatedPrivateToken : FSMAuthenticationState()
 
+    data object AuthenticatedTorBox : FSMAuthenticationState()
+
     data object RefreshingOpenToken : FSMAuthenticationState()
 }
 
@@ -26,6 +28,11 @@ sealed class FSMAuthenticationEvent {
     data object OnAvailableCredentials : FSMAuthenticationEvent()
 
     data object OnMissingCredentials : FSMAuthenticationEvent()
+
+    data object OnTorBoxAuthenticated : FSMAuthenticationEvent()
+
+    /** The user, while already signed in, asked to connect an additional service. */
+    data object OnConnectService : FSMAuthenticationEvent()
 
     data object OnPrivateToken : FSMAuthenticationEvent()
 
@@ -76,6 +83,8 @@ sealed class FSMAuthenticationSideEffect {
     data object PostAuthenticatedOpen : FSMAuthenticationSideEffect()
 
     data object PostAuthenticatedPrivate : FSMAuthenticationSideEffect()
+
+    data object PostAuthenticatedTorBox : FSMAuthenticationSideEffect()
 
     data object PostRefreshingToken : FSMAuthenticationSideEffect()
 }

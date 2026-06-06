@@ -11,27 +11,25 @@ import androidx.recyclerview.selection.SelectionTracker
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.github.livingwithhippos.unchained.R
-import com.github.livingwithhippos.unchained.data.model.TorrentItem
+import com.github.livingwithhippos.unchained.data.model.DebridService
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.databinding.ItemListTorrentBinding
 import com.github.livingwithhippos.unchained.utilities.extension.getFileSizeString
 import com.github.livingwithhippos.unchained.utilities.extension.getStatusTranslation
 
 class TorrentListPagingAdapter(private val listener: TorrentListListener) :
-    PagingDataAdapter<TorrentItem, TorrentViewHolder>(DiffCallback()) {
+    PagingDataAdapter<UnifiedTorrent, TorrentViewHolder>(DiffCallback()) {
 
-    var tracker: SelectionTracker<TorrentItem>? = null
+    var tracker: SelectionTracker<UnifiedTorrent>? = null
 
-    class DiffCallback : DiffUtil.ItemCallback<TorrentItem>() {
-        override fun areItemsTheSame(oldItem: TorrentItem, newItem: TorrentItem): Boolean =
-            oldItem.id == newItem.id
+    class DiffCallback : DiffUtil.ItemCallback<UnifiedTorrent>() {
+        override fun areItemsTheSame(oldItem: UnifiedTorrent, newItem: UnifiedTorrent): Boolean =
+            oldItem.unifiedId == newItem.unifiedId
 
-        // content does not change on update
-        override fun areContentsTheSame(oldItem: TorrentItem, newItem: TorrentItem): Boolean {
-            // check the torrent progress
+        override fun areContentsTheSame(oldItem: UnifiedTorrent, newItem: UnifiedTorrent): Boolean {
             return oldItem.progress == newItem.progress &&
-                // check the torrent status
                 oldItem.status == newItem.status &&
-                // may be triggered by different cache
                 oldItem.bytes == newItem.bytes
         }
     }
@@ -51,12 +49,11 @@ class TorrentListPagingAdapter(private val listener: TorrentListListener) :
 
     override fun getItemViewType(position: Int) = R.layout.item_list_torrent
 
-    fun getTorrentItem(position: Int): TorrentItem? {
-        // snapshot().items[position]
+    fun getTorrentItem(position: Int): UnifiedTorrent? {
         return super.getItem(position)
     }
 
-    fun getPosition(id: String) = snapshot().indexOfFirst { it?.id == id }
+    fun getPosition(unifiedId: String) = snapshot().indexOfFirst { it?.unifiedId == unifiedId }
 }
 
 class TorrentViewHolder(
@@ -64,16 +61,18 @@ class TorrentViewHolder(
     private val listener: TorrentListListener,
 ) : RecyclerView.ViewHolder(binding.root) {
 
-    var mItem: TorrentItem? = null
+    var mItem: UnifiedTorrent? = null
 
-    fun bindCell(item: TorrentItem, selected: Boolean) {
+    fun bindCell(item: UnifiedTorrent, selected: Boolean) {
         mItem = item
         binding.selectionIndicator.visibility = if (selected) View.VISIBLE else View.GONE
 
-        if (item.status == "downloaded") {
-            // "ready" is used to make it clearer that the torrent is NOT downloaded on the phone
-            binding.tvTitle.text = binding.root.context.getStatusTranslation("ready")
-        } else binding.tvTitle.text = binding.root.context.getStatusTranslation(item.status)
+        binding.tvTitle.text =
+            if (item.status == UnifiedTorrentStatus.READY)
+                // "ready" makes it clearer the torrent is NOT downloaded on the phone
+                binding.root.context.getStatusTranslation("ready")
+            else binding.root.context.getStatusTranslation(item.rawStatus)
+
         if (item.progress >= 0 && item.progress < 100) {
             binding.tvProgress.text =
                 itemView.context.getString(R.string.percent_format, item.progress)
@@ -81,23 +80,36 @@ class TorrentViewHolder(
         } else {
             binding.tvProgress.visibility = View.GONE
         }
-        binding.tvName.text = item.filename
+        binding.tvName.text = item.name
         binding.tvSize.text = getFileSizeString(itemView.context, item.bytes)
+
+        // service badge
+        binding.ivService.setImageResource(
+            when (item.service) {
+                DebridService.REAL_DEBRID -> R.drawable.ic_service_realdebrid
+                DebridService.TORBOX -> R.drawable.ic_service_torbox
+            }
+        )
+        binding.ivService.contentDescription =
+            when (item.service) {
+                DebridService.REAL_DEBRID -> binding.root.context.getString(R.string.real_debrid)
+                DebridService.TORBOX -> binding.root.context.getString(R.string.torbox)
+            }
 
         binding.cvTorrent.setOnClickListener { listener.onClick(item) }
     }
 
-    fun getItemDetails(): ItemDetailsLookup.ItemDetails<TorrentItem> =
-        object : ItemDetailsLookup.ItemDetails<TorrentItem>() {
+    fun getItemDetails(): ItemDetailsLookup.ItemDetails<UnifiedTorrent> =
+        object : ItemDetailsLookup.ItemDetails<UnifiedTorrent>() {
             override fun getPosition(): Int = layoutPosition
 
-            override fun getSelectionKey(): TorrentItem? = mItem
+            override fun getSelectionKey(): UnifiedTorrent? = mItem
         }
 }
 
 class TorrentDetailsLookup(private val recyclerView: RecyclerView) :
-    ItemDetailsLookup<TorrentItem>() {
-    override fun getItemDetails(event: MotionEvent): ItemDetails<TorrentItem>? {
+    ItemDetailsLookup<UnifiedTorrent>() {
+    override fun getItemDetails(event: MotionEvent): ItemDetails<UnifiedTorrent>? {
         val view = recyclerView.findChildViewUnder(event.x, event.y)
         if (view != null) {
             return (recyclerView.getChildViewHolder(view) as TorrentViewHolder).getItemDetails()
@@ -107,16 +119,16 @@ class TorrentDetailsLookup(private val recyclerView: RecyclerView) :
 }
 
 interface TorrentListListener {
-    fun onClick(item: TorrentItem)
+    fun onClick(item: UnifiedTorrent)
 }
 
 class TorrentKeyProvider(private val adapter: TorrentListPagingAdapter) :
-    ItemKeyProvider<TorrentItem>(SCOPE_MAPPED) {
-    override fun getKey(position: Int): TorrentItem? {
+    ItemKeyProvider<UnifiedTorrent>(SCOPE_MAPPED) {
+    override fun getKey(position: Int): UnifiedTorrent? {
         return adapter.getTorrentItem(position)
     }
 
-    override fun getPosition(key: TorrentItem): Int {
-        return adapter.getPosition(key.id)
+    override fun getPosition(key: UnifiedTorrent): Int {
+        return adapter.getPosition(key.unifiedId)
     }
 }

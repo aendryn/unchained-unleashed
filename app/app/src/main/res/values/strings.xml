@@ -770,4 +770,46 @@
     <string name="please_select_plugins">Please select at least a plugin</string>
     <string name="disabled">Disabled</string>
     <string name="prowlarr" translatable="false">Prowlarr</string>
+
+    <!-- TorBox -->
+    <string name="torbox" translatable="false">TorBox</string>
+    <string name="real_debrid" translatable="false">Real-Debrid</string>
+    <string name="torbox_settings_summary">Connect a TorBox account to download to it alongside or instead of Real-Debrid</string>
+    <string name="torbox_api_key_title">TorBox API key</string>
+    <string name="torbox_api_key_dialog">Paste your permanent TorBox API key. It will be verified before being saved.</string>
+    <string name="torbox_get_key_title">Get your API key</string>
+    <string name="torbox_get_key_summary">Open the TorBox settings page to copy your API key</string>
+    <string name="torbox_disconnect_title">Disconnect TorBox</string>
+    <string name="torbox_connected">TorBox connected</string>
+    <string name="torbox_disconnected">TorBox disconnected</string>
+    <string name="torbox_invalid_key">Invalid TorBox API key</string>
+    <string name="torbox_empty_key">Please enter an API key</string>
+    <string name="torbox_connection_error">Could not connect to TorBox</string>
+    <string name="torbox_connected_summary">Connected (%1$s)</string>
+    <string name="torbox_not_connected_summary">Not connected</string>
+    <string name="torbox_details_coming_soon">TorBox torrent details are coming soon</string>
+    <string name="torbox_login_message">Or sign in with a TorBox API key</string>
+    <string name="torbox_connect_button">Connect TorBox</string>
+    <string name="torbox_signed_in_home">Signed in with TorBox. Your torrents are in the Torrents tab.</string>
+    <string name="connect_real_debrid">Connect Real-Debrid</string>
+    <string name="both_services">Both</string>
+    <string name="sending_to_torbox">Sending to TorBox…</string>
+    <string name="torbox_added">Added to TorBox</string>
+    <string name="torbox_add_failed">Couldn\'t add to TorBox</string>
+    <string name="hoster_links_need_real_debrid">Hoster links require Real-Debrid</string>
+    <string name="torbox_torrent_details">TorBox torrent</string>
+    <string name="torbox_unknown_file">File</string>
+    <string name="torbox_get_zip">Download all (zip)</string>
+    <string name="torbox_resolving_link">Resolving link…</string>
+    <string name="torbox_link_error">Couldn\'t resolve the download link</string>
+    <string name="torbox_torrent_deleted">Torrent deleted</string>
+    <string name="torbox_action_error">Action failed</string>
+    <string name="torbox_paused">Paused</string>
+    <string name="torbox_resumed">Resumed</string>
+    <string name="torbox_pause">Pause</string>
+    <string name="torbox_resume">Resume</string>
+    <string name="torbox_open_link">Open</string>
+    <string name="torbox_copy_link">Copy link</string>
+    <string name="torbox_link_dialog_title">%1$s</string>
+    <string name="torbox_no_files">No files available yet. The torrent may still be downloading.</string>
 </resources>

@@ -30,7 +30,7 @@ import com.github.livingwithhippos.unchained.data.model.ApiConversionError
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.EmptyBodyError
 import com.github.livingwithhippos.unchained.data.model.NetworkError
-import com.github.livingwithhippos.unchained.data.model.TorrentItem
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
 import com.github.livingwithhippos.unchained.databinding.FragmentDownloadsListBinding
 import com.github.livingwithhippos.unchained.databinding.FragmentTabListsBinding
 import com.github.livingwithhippos.unchained.databinding.FragmentTorrentsListBinding
@@ -234,61 +234,73 @@ class ListsTabFragment : UnchainedFragment() {
                     }
 
                     is ListEvent.TorrentItemClick -> {
-                        when (event.item.status) {
-                            "downloaded",
-                            "ready" -> {
-                                if (event.item.links.size > 1) {
+                        val rdItem = event.item.realDebridItem
+                        if (rdItem == null) {
+                            // TorBox row: open the dedicated TorBox details screen
+                            openTorBoxDetails(event.item)
+                        } else
+                            when (rdItem.status) {
+                                "downloaded",
+                                "ready" -> {
+                                    if (rdItem.links.size > 1) {
+                                        val action =
+                                            ListsTabFragmentDirections
+                                                .actionListTabsDestToFolderListFragment2(
+                                                    folder = null,
+                                                    torrent = rdItem,
+                                                    linkList = null,
+                                                )
+                                        findNavController().navigate(action)
+                                    } else viewModel.unrestrictTorrent(event.item)
+                                }
+                                // open the torrent details fragment
+                                else -> {
                                     val action =
-                                        ListsTabFragmentDirections
-                                            .actionListTabsDestToFolderListFragment2(
-                                                folder = null,
-                                                torrent = event.item,
-                                                linkList = null,
-                                            )
-                                    findNavController().navigate(action)
-                                } else viewModel.unrestrictTorrent(event.item)
-                            }
-                            // open the torrent details fragment
-                            else -> {
-                                val action =
-                                    ListsTabFragmentDirections.actionListsTabToTorrentDetails(
-                                        event.item
-                                    )
-                                var loop = 0
+                                        ListsTabFragmentDirections.actionListsTabToTorrentDetails(
+                                            rdItem
+                                        )
+                                    var loop = 0
 
-                                val controller = findNavController()
-                                lifecycleScope.launch {
-                                    while (
-                                        loop++ < 20 &&
-                                            controller.currentDestination?.id != R.id.list_tabs_dest
-                                    ) {
-                                        delay(100)
+                                    val controller = findNavController()
+                                    lifecycleScope.launch {
+                                        while (
+                                            loop++ < 20 &&
+                                                controller.currentDestination?.id !=
+                                                    R.id.list_tabs_dest
+                                        ) {
+                                            delay(100)
+                                        }
+                                        if (
+                                            controller.currentDestination?.id == R.id.list_tabs_dest
+                                        )
+                                            controller.navigate(action)
                                     }
-                                    if (controller.currentDestination?.id == R.id.list_tabs_dest)
-                                        controller.navigate(action)
                                 }
                             }
-                        }
                     }
 
                     is ListEvent.OpenTorrent -> {
-                        val action =
-                            ListsTabFragmentDirections.actionListsTabToTorrentDetails(event.item)
+                        val rdItem = event.item.realDebridItem
+                        if (rdItem == null) {
+                            openTorBoxDetails(event.item)
+                        } else {
+                            val action =
+                                ListsTabFragmentDirections.actionListsTabToTorrentDetails(rdItem)
 
-                        // workaround to avoid issues when the dialog still hasn't been popped from
-                        // the
-                        // navigation stack
-                        val controller = findNavController()
-                        var loop = 0
-                        lifecycleScope.launch {
-                            while (
-                                loop++ < 20 &&
-                                    controller.currentDestination?.id != R.id.list_tabs_dest
-                            ) {
-                                delay(100)
+                            // workaround to avoid issues when the dialog still hasn't been popped
+                            // from the navigation stack
+                            val controller = findNavController()
+                            var loop = 0
+                            lifecycleScope.launch {
+                                while (
+                                    loop++ < 20 &&
+                                        controller.currentDestination?.id != R.id.list_tabs_dest
+                                ) {
+                                    delay(100)
+                                }
+                                if (controller.currentDestination?.id == R.id.list_tabs_dest)
+                                    controller.navigate(action)
                             }
-                            if (controller.currentDestination?.id == R.id.list_tabs_dest)
-                                controller.navigate(action)
                         }
                     }
 
@@ -373,6 +385,19 @@ class ListsTabFragment : UnchainedFragment() {
             .attach()
 
         super.onViewCreated(view, savedInstanceState)
+    }
+
+    private fun openTorBoxDetails(item: UnifiedTorrent) {
+        val controller = findNavController()
+        val action = ListsTabFragmentDirections.actionListTabsDestToTorBoxDetailsFragment(item)
+        var loop = 0
+        lifecycleScope.launch {
+            while (loop++ < 20 && controller.currentDestination?.id != R.id.list_tabs_dest) {
+                delay(100)
+            }
+            if (controller.currentDestination?.id == R.id.list_tabs_dest)
+                controller.navigate(action)
+        }
     }
 
     private fun showDeleteAllDialog(selectedTab: Int) {
@@ -538,7 +563,8 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         activityViewModel.fsmAuthenticationState.observe(viewLifecycleOwner) {
             when (it?.peekContent()) {
                 FSMAuthenticationState.AuthenticatedOpenToken,
-                FSMAuthenticationState.AuthenticatedPrivateToken -> {
+                FSMAuthenticationState.AuthenticatedPrivateToken,
+                FSMAuthenticationState.AuthenticatedTorBox -> {
                     // register observers if not already registered
                     if (!viewModel.downloadsLiveData.hasActiveObservers())
                         viewModel.downloadsLiveData.observe(viewLifecycleOwner, downloadObserver)
@@ -658,13 +684,13 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         binding.rvTorrentList.adapter = torrentAdapter
 
         // torrent list selection  tracker
-        val torrentTracker: SelectionTracker<TorrentItem> =
+        val torrentTracker: SelectionTracker<UnifiedTorrent> =
             SelectionTracker.Builder(
                     "torrentListSelection",
                     binding.rvTorrentList,
                     TorrentKeyProvider(torrentAdapter),
                     TorrentDetailsLookup(binding.rvTorrentList),
-                    StorageStrategy.createParcelableStorage(TorrentItem::class.java),
+                    StorageStrategy.createParcelableStorage(UnifiedTorrent::class.java),
                 )
                 .withSelectionPredicate(SelectionPredicates.createSelectAnything())
                 .build()
@@ -672,7 +698,7 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         torrentAdapter.tracker = torrentTracker
 
         torrentTracker.addObserver(
-            object : SelectionTracker.SelectionObserver<TorrentItem>() {
+            object : SelectionTracker.SelectionObserver<UnifiedTorrent>() {
                 override fun onSelectionChanged() {
                     super.onSelectionChanged()
                     binding.cbSelectAll.text = torrentTracker.selection.size().toString()
@@ -709,13 +735,19 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
                 return@setOnClickListener
             }
 
-            val item: TorrentItem = torrentTracker.selection.toList().first()
+            val item: UnifiedTorrent = torrentTracker.selection.toList().first()
+            val rdItem = item.realDebridItem
+            if (rdItem == null) {
+                // TorBox row: open the dedicated TorBox details screen
+                openTorBoxDetails(item)
+                return@setOnClickListener
+            }
             val action =
-                if (beforeSelectionStatusList.contains(item.status))
+                if (beforeSelectionStatusList.contains(rdItem.status))
                     ListsTabFragmentDirections.actionListTabsDestToTorrentProcessingFragment(
-                        torrentID = item.id
+                        torrentID = rdItem.id
                     )
-                else ListsTabFragmentDirections.actionListsTabToTorrentDetails(item)
+                else ListsTabFragmentDirections.actionListsTabToTorrentDetails(rdItem)
             findNavController().navigate(action)
         }
         binding.bAddNew?.setOnClickListener {
@@ -740,7 +772,7 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         binding.srLayout.setOnRefreshListener { torrentAdapter.refresh() }
 
         val torrentObserver =
-            Observer<PagingData<TorrentItem>> {
+            Observer<PagingData<UnifiedTorrent>> {
                 viewLifecycleOwner.lifecycleScope.launch {
                     val b = _binding ?: return@launch
 
@@ -759,7 +791,8 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         activityViewModel.fsmAuthenticationState.observe(viewLifecycleOwner) {
             when (it?.peekContent()) {
                 FSMAuthenticationState.AuthenticatedOpenToken,
-                FSMAuthenticationState.AuthenticatedPrivateToken -> {
+                FSMAuthenticationState.AuthenticatedPrivateToken,
+                FSMAuthenticationState.AuthenticatedTorBox -> {
                     // register observers if not already registered
                     if (!viewModel.torrentsLiveData.hasActiveObservers())
                         viewModel.torrentsLiveData.observe(viewLifecycleOwner, torrentObserver)
@@ -834,7 +867,27 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         _binding = null
     }
 
-    override fun onClick(item: TorrentItem) {
+    private fun openTorBoxDetails(item: UnifiedTorrent) {
+        val controller = findNavController()
+        val action = ListsTabFragmentDirections.actionListTabsDestToTorBoxDetailsFragment(item)
+        var loop = 0
+        lifecycleScope.launch {
+            while (loop++ < 20 && controller.currentDestination?.id != R.id.list_tabs_dest) {
+                delay(100)
+            }
+            if (controller.currentDestination?.id == R.id.list_tabs_dest)
+                controller.navigate(action)
+        }
+    }
+
+    override fun onClick(item: UnifiedTorrent) {
+
+        val rdItem = item.realDebridItem
+        if (rdItem == null) {
+            // TorBox row: open the dedicated TorBox details screen
+            openTorBoxDetails(item)
+            return
+        }
 
         // this was used to wait for some loading, can't remember the use case anymore
         // maybe a link share or a notification click?
@@ -846,42 +899,42 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
                 delay(100)
             }
 
-            if (item.status == "downloaded" || item.status == "ready") {
+            if (rdItem.status == "downloaded" || rdItem.status == "ready") {
                 // unrestrict and move to download tab
-                if (item.links.size > 1) {
+                if (rdItem.links.size > 1) {
                     val action =
                         ListsTabFragmentDirections.actionListTabsDestToFolderListFragment2(
                             folder = null,
-                            torrent = item,
+                            torrent = rdItem,
                             linkList = null,
                         )
                     if (controller.currentDestination?.id == R.id.list_tabs_dest)
                         controller.navigate(action)
                     else
                         Timber.e(
-                            "Correct tab was not ready within 2 seconds after clicking torrent $item"
+                            "Correct tab was not ready within 2 seconds after clicking torrent $rdItem"
                         )
                 } else viewModel.unrestrictTorrent(item)
-            } else if (beforeSelectionStatusList.contains(item.status)) {
+            } else if (beforeSelectionStatusList.contains(rdItem.status)) {
                 // go to torrent processing since it is still loading
                 val action =
                     ListsTabFragmentDirections.actionListTabsDestToTorrentProcessingFragment(
-                        torrentID = item.id
+                        torrentID = rdItem.id
                     )
                 if (controller.currentDestination?.id == R.id.list_tabs_dest)
                     controller.navigate(action)
                 else
                     Timber.e(
-                        "Correct tab was not ready within 2 seconds after clicking torrent $item"
+                        "Correct tab was not ready within 2 seconds after clicking torrent $rdItem"
                     )
             } else {
                 // go to torrent details
-                val action = ListsTabFragmentDirections.actionListsTabToTorrentDetails(item)
+                val action = ListsTabFragmentDirections.actionListsTabToTorrentDetails(rdItem)
                 if (controller.currentDestination?.id == R.id.list_tabs_dest)
                     controller.navigate(action)
                 else
                     Timber.e(
-                        "Correct tab was not ready within 2 seconds after clicking torrent $item"
+                        "Correct tab was not ready within 2 seconds after clicking torrent $rdItem"
                     )
             }
         }

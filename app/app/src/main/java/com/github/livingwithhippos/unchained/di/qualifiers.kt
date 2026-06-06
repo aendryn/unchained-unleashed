@@ -6,6 +6,8 @@ import javax.inject.Qualifier
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class ApiRetrofit
 
+@Qualifier @Retention(AnnotationRetention.BINARY) annotation class TorBoxRetrofit
+
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class TorrentNotification
 
 @Qualifier @Retention(AnnotationRetention.BINARY) annotation class TorrentSummaryNotification

@@ -36,6 +36,7 @@ import com.github.livingwithhippos.unchained.data.model.User
 import com.github.livingwithhippos.unchained.data.model.UserAction
 import com.github.livingwithhippos.unchained.data.repository.AuthenticationRepository
 import com.github.livingwithhippos.unchained.data.repository.CustomDownloadRepository
+import com.github.livingwithhippos.unchained.data.repository.DebridManager
 import com.github.livingwithhippos.unchained.data.repository.HostsRepository
 import com.github.livingwithhippos.unchained.data.repository.InstallResult
 import com.github.livingwithhippos.unchained.data.repository.KodiDeviceRepository
@@ -94,6 +95,7 @@ constructor(
     private val kodiDeviceRepository: KodiDeviceRepository,
     private val customDownloadRepository: CustomDownloadRepository,
     private val torrentsRepository: TorrentsRepository,
+    private val debridManager: DebridManager,
     private val updateRepository: UpdateRepository,
     private val remoteDeviceRepository: RemoteDeviceRepository,
     @ApplicationContext applicationContext: Context,
@@ -143,6 +145,12 @@ constructor(
                     transitionTo(
                         FSMAuthenticationState.StartNewLogin,
                         FSMAuthenticationSideEffect.PostNewLogin,
+                    )
+                }
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
             }
@@ -207,6 +215,13 @@ constructor(
                     transitionTo(
                         FSMAuthenticationState.CheckCredentials,
                         FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                // the user can connect a TorBox account from the login screen
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
             }
@@ -274,6 +289,13 @@ constructor(
                         FSMAuthenticationSideEffect.PostNewLogin,
                     )
                 }
+                // re-checking credentials after the user enters a new RD private token
+                on<FSMAuthenticationEvent.OnPrivateToken> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
             }
 
             state<FSMAuthenticationState.RefreshingOpenToken> {
@@ -316,6 +338,41 @@ constructor(
                         FSMAuthenticationSideEffect.PostActionNeeded,
                     )
                 }
+                on<FSMAuthenticationEvent.OnPrivateToken> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+            }
+
+            state<FSMAuthenticationState.AuthenticatedTorBox> {
+                on<FSMAuthenticationEvent.OnLogout> {
+                    transitionTo(
+                        FSMAuthenticationState.StartNewLogin,
+                        FSMAuthenticationSideEffect.PostNewLogin,
+                    )
+                }
+                // a RealDebrid login can still be started while signed in to TorBox
+                on<FSMAuthenticationEvent.OnPrivateToken> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                on<FSMAuthenticationEvent.OnAvailableCredentials> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                // open the login screen to add Real-Debrid without dropping the TorBox session
+                on<FSMAuthenticationEvent.OnConnectService> {
+                    transitionTo(
+                        FSMAuthenticationState.StartNewLogin,
+                        FSMAuthenticationSideEffect.PostNewLogin,
+                    )
+                }
             }
 
             onTransition {
@@ -350,6 +407,11 @@ constructor(
                     FSMAuthenticationSideEffect.PostAuthenticatedPrivate -> {
                         fsmAuthenticationState.postValue(
                             Event(FSMAuthenticationState.AuthenticatedPrivateToken)
+                        )
+                    }
+                    FSMAuthenticationSideEffect.PostAuthenticatedTorBox -> {
+                        fsmAuthenticationState.postValue(
+                            Event(FSMAuthenticationState.AuthenticatedTorBox)
                         )
                     }
                     FSMAuthenticationSideEffect.PostWaitToken -> {
@@ -807,6 +869,9 @@ constructor(
             val protoCredentials = protoStore.getCredentials()
             if (protoCredentials.accessToken.isNotBlank()) {
                 transitionAuthenticationMachine(FSMAuthenticationEvent.OnAvailableCredentials)
+            } else if (debridManager.isTorBoxAuthenticated()) {
+                // no RealDebrid credentials, but the user has connected TorBox: let them in
+                transitionAuthenticationMachine(FSMAuthenticationEvent.OnTorBoxAuthenticated)
             } else {
                 transitionAuthenticationMachine(FSMAuthenticationEvent.OnMissingCredentials)
             }
@@ -830,6 +895,7 @@ constructor(
     fun getCurrentAuthenticationStatus(): CurrentFSMAuthentication =
         when (getAuthenticationMachineState()) {
             FSMAuthenticationState.AuthenticatedPrivateToken,
+            FSMAuthenticationState.AuthenticatedTorBox,
             FSMAuthenticationState.AuthenticatedOpenToken -> CurrentFSMAuthentication.Authenticated
             FSMAuthenticationState.Start,
             FSMAuthenticationState.CheckCredentials,
@@ -845,6 +911,20 @@ constructor(
     fun goToStartUpScreen() {
         jumpTabLiveData.postEvent(preferences.getString("main_screen", "user") ?: "user")
     }
+
+    /**
+     * Land on the torrents list. Used for TorBox-only sessions, which have no RealDebrid user
+     * profile to show on the home tab.
+     */
+    fun goToTorrentList() {
+        jumpTabLiveData.postEvent("downloads")
+    }
+
+    /** True if Real-Debrid credentials are currently saved. */
+    suspend fun isRealDebridConnected(): Boolean = debridManager.isRealDebridAuthenticated()
+
+    /** True if a TorBox API key is currently saved. */
+    fun isTorBoxConnected(): Boolean = debridManager.isTorBoxAuthenticated()
 
     /** Loads the old saved kodi preference into the new db one and then deletes it */
     fun migrateKodiPreferences() {

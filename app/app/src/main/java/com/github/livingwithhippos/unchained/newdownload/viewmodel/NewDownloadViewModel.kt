@@ -7,6 +7,7 @@ import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UploadedTorrent
 import com.github.livingwithhippos.unchained.data.repository.HostsRepository
+import com.github.livingwithhippos.unchained.data.repository.TorBoxTorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.UnrestrictRepository
 import com.github.livingwithhippos.unchained.utilities.EitherResult
@@ -26,6 +27,7 @@ class NewDownloadViewModel
 constructor(
     private val unrestrictRepository: UnrestrictRepository,
     private val torrentsRepository: TorrentsRepository,
+    private val torBoxTorrentsRepository: TorBoxTorrentsRepository,
     private val hostsRepository: HostsRepository,
 ) : ViewModel() {
 
@@ -35,6 +37,9 @@ constructor(
     val networkExceptionLiveData = MutableLiveData<Event<UnchainedNetworkException>>()
     val linkLiveData = MutableLiveData<Event<Link>>()
     val toastLiveData = MutableLiveData<Event<String>>()
+
+    /** Result of a best-effort TorBox add fired alongside a Real-Debrid one (the "Both" case). */
+    val torBoxResultLiveData = MutableLiveData<Event<Boolean>>()
 
     fun fetchUnrestrictedLink(link: String, password: String?, remote: Int? = null) {
         viewModelScope.launch {
@@ -80,23 +85,45 @@ constructor(
         }
     }
 
-    fun fetchUploadedTorrent(binaryTorrent: ByteArray) {
+    fun fetchUploadedTorrent(binaryTorrent: ByteArray, service: String = "real_debrid") {
         viewModelScope.launch {
-            val availableHosts = torrentsRepository.getAvailableHosts()
-            if (availableHosts.isNullOrEmpty()) {
-                Timber.e("Error fetching available hosts")
-            } else {
-                val uploadedTorrent =
-                    torrentsRepository.addTorrent(binaryTorrent, availableHosts.first().host)
-                when (uploadedTorrent) {
+            val toTorBox = service == "torbox" || service == "both"
+            val toRealDebrid = service == "real_debrid" || service == "both"
+
+            if (toTorBox) {
+                when (val tb = torBoxTorrentsRepository.addTorrent(binaryTorrent)) {
                     is EitherResult.Failure -> {
-                        networkExceptionLiveData.postEvent(uploadedTorrent.failure)
+                        if (!toRealDebrid) networkExceptionLiveData.postEvent(tb.failure)
+                        else torBoxResultLiveData.postEvent(false)
                     }
                     is EitherResult.Success -> {
-                        // todo: add checks for already chosen torrent/magnet (if possible),
-                        // otherwise we get
-                        // multiple downloads
-                        linkLiveData.postEvent(Link.Torrent(uploadedTorrent.success))
+                        if (!toRealDebrid) {
+                            // TorBox only: nothing else to do, it starts automatically
+                            linkLiveData.postEvent(Link.TorBoxAdded)
+                            return@launch
+                        } else {
+                            torBoxResultLiveData.postEvent(true)
+                        }
+                    }
+                }
+            }
+
+            if (toRealDebrid) {
+                val availableHosts = torrentsRepository.getAvailableHosts()
+                if (availableHosts.isNullOrEmpty()) {
+                    Timber.e("Error fetching available hosts")
+                } else {
+                    val uploadedTorrent =
+                        torrentsRepository.addTorrent(binaryTorrent, availableHosts.first().host)
+                    when (uploadedTorrent) {
+                        is EitherResult.Failure -> {
+                            networkExceptionLiveData.postEvent(uploadedTorrent.failure)
+                        }
+                        is EitherResult.Success -> {
+                            // todo: add checks for already chosen torrent/magnet (if possible),
+                            // otherwise we get multiple downloads
+                            linkLiveData.postEvent(Link.Torrent(uploadedTorrent.success))
+                        }
                     }
                 }
             }
@@ -119,6 +146,8 @@ sealed class Link {
     data class Torrent(val upload: UploadedTorrent) : Link()
 
     data class Container(val links: List<String>) : Link()
+
+    data object TorBoxAdded : Link()
 
     data object RetrievalError : Link()
 }

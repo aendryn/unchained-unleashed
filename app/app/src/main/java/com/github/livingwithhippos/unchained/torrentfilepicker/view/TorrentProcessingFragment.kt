@@ -168,6 +168,20 @@ class TorrentProcessingFragment : UnchainedFragment(), TorrentContentListener {
                     // do nothing
                 }
 
+                TorrentEvent.TorBoxAdded -> {
+                    // TorBox-only: it starts automatically, go back to the (refreshed) list
+                    activityViewModel.setListState(ListState.UpdateTorrent)
+                    context?.showToast(R.string.torbox_added)
+                    findNavController().popBackStack(R.id.list_tabs_dest, false)
+                }
+
+                is TorrentEvent.TorBoxBothResult -> {
+                    // best-effort TorBox half of a "Both" add; the RD flow continues the UI
+                    context?.showToast(
+                        if (content.success) R.string.torbox_added else R.string.torbox_add_failed
+                    )
+                }
+
                 is TorrentEvent.SelectionUpdated -> {
                     currentStructure?.let { structure ->
                         val filesList = mutableListOf<TorrentFileItem>()
@@ -246,12 +260,18 @@ class TorrentProcessingFragment : UnchainedFragment(), TorrentContentListener {
                 when {
                     it.isTorrent() -> {
                         Timber.d("Found torrent $it")
+                        // bytes are needed for TorBox; downloadTorrentToCache → loadCachedTorrent
+                        // routes them per service
                         downloadTorrentToCache(it)
                     }
 
                     args.link.isMagnet() -> {
                         Timber.d("Found magnet $it")
-                        viewModel.fetchAddedMagnet(it)
+                        when (args.service) {
+                            "torbox" -> viewModel.addMagnetTorBox(it)
+                            "both" -> viewModel.addMagnetBoth(it)
+                            else -> viewModel.fetchAddedMagnet(it)
+                        }
                     }
 
                     else -> {
@@ -374,7 +394,11 @@ class TorrentProcessingFragment : UnchainedFragment(), TorrentContentListener {
             val cacheFile = File(cacheDir, fileName)
             cacheFile.inputStream().use { inputStream ->
                 val buffer: ByteArray = inputStream.readBytes()
-                viewModel.fetchUploadedTorrent(buffer)
+                when (args.service) {
+                    "torbox" -> viewModel.addTorrentBytesTorBox(buffer)
+                    "both" -> viewModel.addTorrentBytesBoth(buffer)
+                    else -> viewModel.fetchUploadedTorrent(buffer)
+                }
             }
         } catch (exception: Exception) {
             viewModel.triggerTorrentEvent(TorrentEvent.DownloadedFileFailure)

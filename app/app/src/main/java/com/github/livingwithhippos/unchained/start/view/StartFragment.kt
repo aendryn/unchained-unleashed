@@ -53,6 +53,14 @@ class StartFragment : UnchainedFragment() {
                         val navigated = safeNavigate(action)
                         if (navigated) activityViewModel.goToStartUpScreen()
                     }
+                    FSMAuthenticationState.AuthenticatedTorBox -> {
+                        // Universal landing: the profile screen is now a service-aware accounts
+                        // hub that works whether or not Real-Debrid is connected.
+                        val action =
+                            StartFragmentDirections.actionStartFragmentToUserProfileFragment()
+                        val navigated = safeNavigate(action)
+                        if (navigated) activityViewModel.goToStartUpScreen()
+                    }
                     is FSMAuthenticationState.WaitingUserAction -> {
                         // todo: show action needed
 

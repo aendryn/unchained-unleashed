@@ -35,6 +35,9 @@
         <action
             android:id="@+id/action_list_tabs_dest_to_torrentProcessingFragment"
             app:destination="@id/torrentProcessingFragment" />
+        <action
+            android:id="@+id/action_list_tabs_dest_to_torBoxDetailsFragment"
+            app:destination="@id/torBoxDetailsFragment" />
     </fragment>
 
     <fragment
@@ -147,5 +150,19 @@
             app:nullable="true"
             android:defaultValue="@null"
             />
+        <argument
+            android:name="service"
+            app:argType="string"
+            android:defaultValue="real_debrid"
+            />
+    </fragment>
+    <fragment
+        android:id="@+id/torBoxDetailsFragment"
+        android:name="com.github.livingwithhippos.unchained.torrentdetails.view.TorBoxDetailsFragment"
+        android:label="@string/torbox_torrent_details"
+        tools:layout="@layout/fragment_torbox_details">
+        <argument
+            android:name="torrent"
+            app:argType="com.github.livingwithhippos.unchained.data.model.UnifiedTorrent" />
     </fragment>
 </navigation>

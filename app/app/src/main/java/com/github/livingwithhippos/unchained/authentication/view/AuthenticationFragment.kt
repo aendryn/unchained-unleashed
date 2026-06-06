@@ -16,8 +16,11 @@ import androidx.navigation.fragment.findNavController
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.authentication.viewmodel.AuthenticationViewModel
 import com.github.livingwithhippos.unchained.authentication.viewmodel.SecretResult
+import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthResult
+import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthViewModel
 import com.github.livingwithhippos.unchained.base.UnchainedFragment
 import com.github.livingwithhippos.unchained.databinding.FragmentAuthenticationBinding
+import com.github.livingwithhippos.unchained.statemachine.authentication.CurrentFSMAuthentication
 import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationEvent
 import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationState
 import com.github.livingwithhippos.unchained.utilities.EventObserver
@@ -39,6 +42,7 @@ import kotlinx.coroutines.launch
 class AuthenticationFragment : UnchainedFragment() {
 
     private val viewModel: AuthenticationViewModel by viewModels()
+    private val torBoxAuthViewModel: TorBoxAuthViewModel by viewModels()
     private var _binding: FragmentAuthenticationBinding? = null
     private val binding
         get() = _binding!!
@@ -94,6 +98,42 @@ class AuthenticationFragment : UnchainedFragment() {
 
         binding.bInsertPrivate.setOnClickListener { onSaveCodeClick(binding.tiPrivateCode) }
 
+        binding.bInsertTorBox.setOnClickListener {
+            torBoxAuthViewModel.verifyAndSave(binding.tiTorBoxKey.text.toString())
+            binding.tiTorBoxKey.hideKeyboard()
+        }
+
+        torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { result ->
+                when (result) {
+                    is TorBoxAuthResult.Authenticated -> {
+                        context?.showToast(R.string.torbox_connected)
+                        if (
+                            activityViewModel.getCurrentAuthenticationStatus() ==
+                                CurrentFSMAuthentication.Authenticated
+                        ) {
+                            // already signed in (adding TorBox as a second service): just go back
+                            val action =
+                                AuthenticationFragmentDirections.actionAuthenticationToUser()
+                            findNavController().navigate(action)
+                        } else {
+                            activityViewModel.transitionAuthenticationMachine(
+                                FSMAuthenticationEvent.OnTorBoxAuthenticated
+                            )
+                        }
+                    }
+                    TorBoxAuthResult.InvalidKey -> context?.showToast(R.string.torbox_invalid_key)
+                    TorBoxAuthResult.NetworkError -> context?.showToast(R.string.network_error)
+                    TorBoxAuthResult.EmptyKey -> context?.showToast(R.string.torbox_empty_key)
+                    is TorBoxAuthResult.Failure ->
+                        context?.showToast(R.string.torbox_connection_error)
+                    TorBoxAuthResult.Disconnected -> {
+                        // not triggered from this screen
+                    }
+                }
+            }
+        }
+
         activityViewModel.fsmAuthenticationState.observe(viewLifecycleOwner) {
             if (it != null) {
                 when (it.peekContent()) {
@@ -103,6 +143,12 @@ class AuthenticationFragment : UnchainedFragment() {
                     }
 
                     FSMAuthenticationState.AuthenticatedPrivateToken -> {
+                        val action = AuthenticationFragmentDirections.actionAuthenticationToUser()
+                        findNavController().navigate(action)
+                    }
+
+                    FSMAuthenticationState.AuthenticatedTorBox -> {
+                        // Universal landing: go to the accounts hub (works without Real-Debrid)
                         val action = AuthenticationFragmentDirections.actionAuthenticationToUser()
                         findNavController().navigate(action)
                     }

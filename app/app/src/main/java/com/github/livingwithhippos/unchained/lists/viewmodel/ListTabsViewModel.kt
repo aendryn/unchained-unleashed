@@ -12,14 +12,18 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.liveData
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
-import com.github.livingwithhippos.unchained.data.model.TorrentItem
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
+import com.github.livingwithhippos.unchained.data.repository.DebridManager
 import com.github.livingwithhippos.unchained.data.repository.DownloadRepository
+import com.github.livingwithhippos.unchained.data.repository.TorBoxTorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.UnrestrictRepository
 import com.github.livingwithhippos.unchained.lists.model.DownloadPagingSource
-import com.github.livingwithhippos.unchained.lists.model.TorrentPagingSource
+import com.github.livingwithhippos.unchained.lists.model.UnifiedTorrentPagingSource
 import com.github.livingwithhippos.unchained.utilities.DOWNLOADS_TAB
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import com.github.livingwithhippos.unchained.utilities.Event
@@ -41,6 +45,8 @@ constructor(
     private val preferences: SharedPreferences,
     private val downloadRepository: DownloadRepository,
     private val torrentsRepository: TorrentsRepository,
+    private val torBoxTorrentsRepository: TorBoxTorrentsRepository,
+    private val debridManager: DebridManager,
     private val unrestrictRepository: UnrestrictRepository,
 ) : ViewModel() {
 
@@ -62,12 +68,17 @@ constructor(
                 .cachedIn(viewModelScope)
         }
 
-    val torrentsLiveData: LiveData<PagingData<TorrentItem>> =
+    val torrentsLiveData: LiveData<PagingData<UnifiedTorrent>> =
         queryLiveData.switchMap { query: String ->
             val size = getPagingSize()
             val initialSize = max(size, INITIAL_LOAD)
             Pager(PagingConfig(pageSize = size, initialLoadSize = initialSize)) {
-                    TorrentPagingSource(torrentsRepository, query)
+                    UnifiedTorrentPagingSource(
+                        torrentsRepository,
+                        torBoxTorrentsRepository,
+                        debridManager,
+                        query,
+                    )
                 }
                 .liveData
                 .cachedIn(viewModelScope)
@@ -83,13 +94,16 @@ constructor(
     val eventLiveData = MutableLiveData<Event<ListEvent>>()
 
     /**
-     * Un restrict a torrent and move it to the download section
+     * Un-restrict a torrent and move it to the download section. Only Real-Debrid is wired here;
+     * TorBox resolves links per-file via `requestdl` and is handled with the details migration
+     * (roadmap §6).
      *
      * @param torrent
      */
-    fun unrestrictTorrent(torrent: TorrentItem) {
+    fun unrestrictTorrent(torrent: UnifiedTorrent) {
+        val rdItem = torrent.realDebridItem ?: return
         viewModelScope.launch {
-            val items = unrestrictRepository.getUnrestrictedLinkList(torrent.links)
+            val items = unrestrictRepository.getUnrestrictedLinkList(rdItem.links)
             val values =
                 items.filterIsInstance<EitherResult.Success<DownloadItem>>().map { it.success }
             val errors =
@@ -146,26 +160,42 @@ constructor(
 
     fun deleteAllTorrents() {
         viewModelScope.launch {
-            do {
-                val torrents = torrentsRepository.getTorrentsList(0, 1, 50)
-                torrents.forEach { torrentsRepository.deleteTorrent(it.id) }
-            } while (torrents.size >= 50)
+            val services = debridManager.authenticatedServices()
+            if (services.contains(DebridService.REAL_DEBRID)) {
+                do {
+                    val torrents = torrentsRepository.getTorrentsList(0, 1, 50)
+                    torrents.forEach { torrentsRepository.deleteTorrent(it.id) }
+                } while (torrents.size >= 50)
+            }
+            if (services.contains(DebridService.TORBOX)) {
+                torBoxTorrentsRepository.getTorrentsList(limit = 1000).forEach {
+                    torBoxTorrentsRepository.deleteTorrent(it.rawId.toLong())
+                }
+            }
 
             deletedTorrentLiveData.postEvent(TORRENTS_DELETED_ALL)
         }
     }
 
-    fun deleteTorrents(torrents: List<TorrentItem>) {
+    fun deleteTorrents(torrents: List<UnifiedTorrent>) {
         viewModelScope.launch {
-            torrents.forEach { torrentsRepository.deleteTorrent(it.id) }
+            torrents.forEach { deleteUnified(it) }
             if (torrents.size > 1) deletedTorrentLiveData.postEvent(TORRENTS_DELETED)
             else deletedTorrentLiveData.postEvent(TORRENT_DELETED)
         }
     }
 
-    fun downloadItems(torrents: List<TorrentItem>) {
+    private suspend fun deleteUnified(torrent: UnifiedTorrent) {
+        when (torrent.service) {
+            DebridService.REAL_DEBRID -> torrentsRepository.deleteTorrent(torrent.rawId)
+            DebridService.TORBOX ->
+                torrent.rawId.toLongOrNull()?.let { torBoxTorrentsRepository.deleteTorrent(it) }
+        }
+    }
+
+    fun downloadItems(torrents: List<UnifiedTorrent>) {
         torrents
-            .filter { it.status == "downloaded" || it.status == "ready" }
+            .filter { it.status == UnifiedTorrentStatus.READY }
             .forEach { unrestrictTorrent(it) }
     }
 
@@ -197,9 +227,9 @@ constructor(
 sealed class ListEvent {
     data class DownloadItemClick(val item: DownloadItem) : ListEvent()
 
-    data class TorrentItemClick(val item: TorrentItem) : ListEvent()
+    data class TorrentItemClick(val item: UnifiedTorrent) : ListEvent()
 
-    data class OpenTorrent(val item: TorrentItem) : ListEvent()
+    data class OpenTorrent(val item: UnifiedTorrent) : ListEvent()
 
     data class SetTab(val tab: Int) : ListEvent()
 

@@ -43,6 +43,7 @@ import com.github.livingwithhippos.unchained.utilities.extension.isMagnet
 import com.github.livingwithhippos.unchained.utilities.extension.isSimpleWebUrl
 import com.github.livingwithhippos.unchained.utilities.extension.isTorrent
 import com.github.livingwithhippos.unchained.utilities.extension.isWebUrl
+import com.github.livingwithhippos.unchained.utilities.extension.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.IOException
 import kotlinx.coroutines.delay
@@ -65,6 +66,9 @@ class NewDownloadFragment : UnchainedFragment() {
     private val binding
         get() = _binding!!
 
+    /** Which debrid service(s) a new download should be sent to. Set by the service selector. */
+    private var selectedService: String = SERVICE_REAL_DEBRID
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -74,6 +78,7 @@ class NewDownloadFragment : UnchainedFragment() {
 
         setupObservers(binding)
         setupClickListeners(binding)
+        setupServiceSelector(binding)
         setupArgs(binding)
 
         return binding.root
@@ -141,6 +146,13 @@ class NewDownloadFragment : UnchainedFragment() {
                                     torrentID = link.upload.id
                                 )
                         findNavController().navigate(action)
+                    }
+
+                    is Link.TorBoxAdded -> {
+                        // TorBox starts automatically; just refresh the list and go back to it
+                        activityViewModel.setListState(ListState.UpdateTorrent)
+                        context?.showToast(R.string.torbox_added)
+                        findNavController().popBackStack(R.id.list_tabs_dest, false)
                     }
 
                     else -> {}
@@ -258,6 +270,13 @@ class NewDownloadFragment : UnchainedFragment() {
                 }
             },
         )
+
+        viewModel.torBoxResultLiveData.observe(
+            viewLifecycleOwner,
+            EventObserver { added ->
+                context?.showToast(if (added) R.string.torbox_added else R.string.torbox_add_failed)
+            },
+        )
     }
 
     private fun setupClickListeners(binding: NewDownloadFragmentBinding) {
@@ -266,7 +285,8 @@ class NewDownloadFragment : UnchainedFragment() {
             val authState = activityViewModel.getAuthenticationMachineState()
             if (
                 authState is FSMAuthenticationState.AuthenticatedPrivateToken ||
-                    authState is FSMAuthenticationState.AuthenticatedOpenToken
+                    authState is FSMAuthenticationState.AuthenticatedOpenToken ||
+                    authState is FSMAuthenticationState.AuthenticatedTorBox
             ) {
                 val link: String = binding.tiLink.text.toString().trim()
 
@@ -299,7 +319,8 @@ class NewDownloadFragment : UnchainedFragment() {
                             val action =
                                 NewDownloadFragmentDirections
                                     .actionNewDownloadFragmentToTorrentProcessingFragment(
-                                        link = link
+                                        link = link,
+                                        service = selectedService,
                                     )
                             findNavController().navigate(action)
 
@@ -322,7 +343,8 @@ class NewDownloadFragment : UnchainedFragment() {
                             val action =
                                 NewDownloadFragmentDirections
                                     .actionNewDownloadFragmentToTorrentProcessingFragment(
-                                        link = link
+                                        link = link,
+                                        service = selectedService,
                                     )
                             findNavController().navigate(action)
                         }
@@ -332,6 +354,13 @@ class NewDownloadFragment : UnchainedFragment() {
                         }
 
                         link.isWebUrl() || link.isSimpleWebUrl() -> {
+                            // hoster-link unrestricting is a Real-Debrid feature
+                            if (selectedService == SERVICE_TORBOX) {
+                                viewModel.postMessage(
+                                    getString(R.string.hoster_links_need_real_debrid)
+                                )
+                                return@setOnClickListener
+                            }
                             viewModel.postMessage(getString(R.string.loading_host_link))
                             enableButtons(binding, false)
 
@@ -426,6 +455,7 @@ class NewDownloadFragment : UnchainedFragment() {
             when (activityViewModel.getAuthenticationMachineState()) {
                 FSMAuthenticationState.AuthenticatedOpenToken,
                 FSMAuthenticationState.AuthenticatedPrivateToken,
+                FSMAuthenticationState.AuthenticatedTorBox,
                 FSMAuthenticationState.RefreshingOpenToken -> {
                     filePicker.launch("*/*")
                 }
@@ -521,13 +551,47 @@ class NewDownloadFragment : UnchainedFragment() {
         }
     }
 
+    private fun setupServiceSelector(binding: NewDownloadFragmentBinding) {
+        lifecycleScope.launch {
+            val rdConnected = activityViewModel.isRealDebridConnected()
+            val torBoxConnected = activityViewModel.isTorBoxConnected()
+            when {
+                rdConnected && torBoxConnected -> {
+                    // both services: let the user choose per download
+                    binding.tgService.visibility = View.VISIBLE
+                    binding.tgService.check(R.id.bServiceRd)
+                    selectedService = SERVICE_REAL_DEBRID
+                    binding.tgService.addOnButtonCheckedListener { _, checkedId, isChecked ->
+                        if (isChecked) {
+                            selectedService =
+                                when (checkedId) {
+                                    R.id.bServiceTorBox -> SERVICE_TORBOX
+                                    R.id.bServiceBoth -> SERVICE_BOTH
+                                    else -> SERVICE_REAL_DEBRID
+                                }
+                        }
+                    }
+                }
+                torBoxConnected -> {
+                    // only TorBox: hide the selector, send everything to TorBox
+                    binding.tgService.visibility = View.GONE
+                    selectedService = SERVICE_TORBOX
+                }
+                else -> {
+                    binding.tgService.visibility = View.GONE
+                    selectedService = SERVICE_REAL_DEBRID
+                }
+            }
+        }
+    }
+
     private fun loadTorrent(binding: NewDownloadFragmentBinding, uri: Uri) {
         // https://developer.android.com/training/data-storage/shared/documents-files#open
         try {
             viewModel.postMessage(getString(R.string.loading_torrent_file))
             requireContext().contentResolver.openInputStream(uri)?.use { inputStream ->
                 val buffer: ByteArray = inputStream.readBytes()
-                viewModel.fetchUploadedTorrent(buffer)
+                viewModel.fetchUploadedTorrent(buffer, selectedService)
             }
         } catch (exception: Exception) {
             when (exception) {
@@ -585,5 +649,11 @@ class NewDownloadFragment : UnchainedFragment() {
             enableButtons(binding, true)
             viewModel.postMessage(getString(R.string.error_loading_file))
         }
+    }
+
+    companion object {
+        const val SERVICE_REAL_DEBRID = "real_debrid"
+        const val SERVICE_TORBOX = "torbox"
+        const val SERVICE_BOTH = "both"
     }
 }

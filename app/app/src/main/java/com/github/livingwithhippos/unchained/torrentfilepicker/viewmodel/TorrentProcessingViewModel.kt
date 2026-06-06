@@ -8,6 +8,7 @@ import com.github.livingwithhippos.unchained.data.model.EmptyBodyError
 import com.github.livingwithhippos.unchained.data.model.TorrentItem
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UploadedTorrent
+import com.github.livingwithhippos.unchained.data.repository.TorBoxTorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
 import com.github.livingwithhippos.unchained.torrentdetails.model.TorrentFileItem
 import com.github.livingwithhippos.unchained.utilities.EitherResult
@@ -32,6 +33,7 @@ class TorrentProcessingViewModel
 constructor(
     private val savedStateHandle: SavedStateHandle,
     private val torrentsRepository: TorrentsRepository,
+    private val torBoxTorrentsRepository: TorBoxTorrentsRepository,
 ) : ViewModel() {
 
     val networkExceptionLiveData = MutableLiveData<Event<UnchainedNetworkException>>()
@@ -150,6 +152,44 @@ constructor(
         torrentLiveData.postEvent(event)
     }
 
+    /** Add a magnet to TorBox only. It starts automatically, so no file-selection step. */
+    fun addMagnetTorBox(magnet: String) {
+        viewModelScope.launch {
+            when (val res = torBoxTorrentsRepository.addMagnet(magnet)) {
+                is EitherResult.Failure -> networkExceptionLiveData.postEvent(res.failure)
+                is EitherResult.Success -> torrentLiveData.postEvent(TorrentEvent.TorBoxAdded)
+            }
+        }
+    }
+
+    /** Add a magnet to both services: TorBox best-effort, then the Real-Debrid file-picker flow. */
+    fun addMagnetBoth(magnet: String) {
+        viewModelScope.launch {
+            val res = torBoxTorrentsRepository.addMagnet(magnet)
+            torrentLiveData.postEvent(TorrentEvent.TorBoxBothResult(res is EitherResult.Success))
+            fetchAddedMagnet(magnet)
+        }
+    }
+
+    /** Upload torrent bytes to TorBox only. */
+    fun addTorrentBytesTorBox(bytes: ByteArray) {
+        viewModelScope.launch {
+            when (val res = torBoxTorrentsRepository.addTorrent(bytes)) {
+                is EitherResult.Failure -> networkExceptionLiveData.postEvent(res.failure)
+                is EitherResult.Success -> torrentLiveData.postEvent(TorrentEvent.TorBoxAdded)
+            }
+        }
+    }
+
+    /** Upload torrent bytes to both services: TorBox best-effort, then Real-Debrid. */
+    fun addTorrentBytesBoth(bytes: ByteArray) {
+        viewModelScope.launch {
+            val res = torBoxTorrentsRepository.addTorrent(bytes)
+            torrentLiveData.postEvent(TorrentEvent.TorBoxBothResult(res is EitherResult.Success))
+            fetchUploadedTorrent(bytes)
+        }
+    }
+
     fun fetchUploadedTorrent(binaryTorrent: ByteArray) {
         viewModelScope.launch {
             val availableHosts = torrentsRepository.getAvailableHosts()
@@ -196,4 +236,10 @@ sealed class TorrentEvent {
     data object DownloadedFileFailure : TorrentEvent()
 
     data class DownloadedFileProgress(val progress: Int) : TorrentEvent()
+
+    /** A TorBox-only add succeeded; the torrent starts automatically (no file selection). */
+    data object TorBoxAdded : TorrentEvent()
+
+    /** Result of the best-effort TorBox add in the "Both" flow (true = added). */
+    data class TorBoxBothResult(val success: Boolean) : TorrentEvent()
 }

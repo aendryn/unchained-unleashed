@@ -279,6 +279,15 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                FSMAuthenticationState.AuthenticatedTorBox -> {
+                    // unlock the bottom menu
+                    enableAllBottomNavItems()
+                    if (!checkedUpdate) {
+                        checkedUpdate = true
+                        viewModel.checkUpdates(BuildConfig.VERSION_CODE, getApplicationSignatures())
+                    }
+                }
+
                 FSMAuthenticationState.WaitingToken -> {
                     // this state should be managed by the fragments directly
                 }
@@ -315,6 +324,7 @@ class MainActivity : AppCompatActivity() {
         // this
         when (viewModel.fsmAuthenticationState.value?.peekContent()) {
             is FSMAuthenticationState.AuthenticatedPrivateToken,
+            FSMAuthenticationState.AuthenticatedTorBox,
             FSMAuthenticationState.AuthenticatedOpenToken -> {
                 // we probably stopped and restored the app, do the same actions
                 // in the viewModel.fsmAuthenticationState.observe for these states

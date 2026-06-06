@@ -3,6 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
+        android:summary="@string/torbox_settings_summary"
+        android:title="@string/torbox">
+
+        <EditTextPreference
+            android:dialogMessage="@string/torbox_api_key_dialog"
+            android:key="torbox_api_key_input"
+            android:persistent="false"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/torbox_api_key_title" />
+
+        <Preference
+            app:key="torbox_get_key"
+            app:summary="@string/torbox_get_key_summary"
+            app:title="@string/torbox_get_key_title" />
+
+        <Preference
+            app:key="torbox_disconnect"
+            app:title="@string/torbox_disconnect_title" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:summary="@string/restart_to_apply"
         android:title="@string/title_aspect">
 

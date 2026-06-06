@@ -106,11 +106,46 @@
             android:layout_marginBottom="5dp"
             android:checked="false"
             android:text="@string/remote_traffic"
-            app:layout_constraintBottom_toTopOf="@+id/bUnrestrict"
+            app:layout_constraintBottom_toTopOf="@+id/tgService"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tiPassword" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/tgService"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@+id/bUnrestrict"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/switchRemote"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/bServiceRd"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/real_debrid" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/bServiceTorBox"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/torbox" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/bServiceBoth"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/both_services" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <Button
             android:id="@+id/bUnrestrict"
@@ -124,7 +159,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.502"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/switchRemote" />
+            app:layout_constraintTop_toBottomOf="@+id/tgService" />
 
         <com.google.android.material.divider.MaterialDivider
             android:id="@+id/divider"
