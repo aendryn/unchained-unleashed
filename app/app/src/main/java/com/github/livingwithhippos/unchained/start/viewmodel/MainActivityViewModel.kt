@@ -252,6 +252,13 @@ constructor(
                         FSMAuthenticationSideEffect.CheckingCredentials,
                     )
                 }
+                // the RD device-code flow parks here while the user may instead enter a TorBox key
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
             }
 
             state<FSMAuthenticationState.WaitingToken> {
@@ -266,6 +273,13 @@ constructor(
                     transitionTo(
                         FSMAuthenticationState.CheckCredentials,
                         FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                // the RD device-code flow parks here while the user may instead enter a TorBox key
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
             }

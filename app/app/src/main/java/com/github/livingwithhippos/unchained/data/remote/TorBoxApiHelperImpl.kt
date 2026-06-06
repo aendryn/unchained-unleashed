@@ -1,5 +1,6 @@
 package com.github.livingwithhippos.unchained.data.remote
 
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxCreateTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxDownloadLinkResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrentListResponse
@@ -73,7 +74,12 @@ class TorBoxApiHelperImpl @Inject constructor(private val torBoxApi: TorBoxApi) 
         token: String,
         torrentId: Long,
         operation: String,
-    ): Response<Unit> = torBoxApi.controlTorrent(TORBOX_API_VERSION, token, torrentId, operation)
+    ): Response<Unit> =
+        torBoxApi.controlTorrent(
+            TORBOX_API_VERSION,
+            token,
+            TorBoxControlTorrentRequest(torrentId, operation),
+        )
 
     override suspend fun requestDownloadLink(
         apiKey: String,

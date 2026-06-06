@@ -111,6 +111,16 @@ data class TorBoxCreateTorrentData(
     @param:Json(name = "current_active_downloads") val currentActiveDownloads: Int?,
 )
 
+/**
+ * JSON body of POST /v1/api/torrents/controltorrent. The endpoint expects a JSON object (not a form
+ * body); [operation] is one of "reannounce", "delete", "resume", "pause".
+ */
+@JsonClass(generateAdapter = true)
+data class TorBoxControlTorrentRequest(
+    @param:Json(name = "torrent_id") val torrentId: Long,
+    @param:Json(name = "operation") val operation: String,
+)
+
 /** Response of GET /v1/api/torrents/requestdl. [data] is the temporary CDN url (or null). */
 @JsonClass(generateAdapter = true)
 data class TorBoxDownloadLinkResponse(

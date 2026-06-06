@@ -1,5 +1,6 @@
 package com.github.livingwithhippos.unchained.data.remote
 
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxCreateTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxDownloadLinkResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrentListResponse
@@ -8,8 +9,7 @@ import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUserRespons
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
@@ -78,16 +78,15 @@ interface TorBoxApi {
     ): Response<TorBoxCreateTorrentResponse>
 
     /**
-     * Control an existing torrent. [operation] is one of "reannounce", "delete", "resume", "pause".
-     * Sent as a form body with the numeric torrent id.
+     * Control an existing torrent. The endpoint expects a JSON object body (see
+     * [TorBoxControlTorrentRequest]); operation is one of "reannounce", "delete", "resume",
+     * "pause".
      */
-    @FormUrlEncoded
     @POST("{api_version}/api/torrents/controltorrent")
     suspend fun controlTorrent(
         @Path("api_version") apiVersion: String,
         @Header("Authorization") token: String,
-        @Field("torrent_id") torrentId: Long,
-        @Field("operation") operation: String,
+        @Body request: TorBoxControlTorrentRequest,
     ): Response<Unit>
 
     /**
