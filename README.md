@@ -6,14 +6,7 @@
 
 > **Unchained Unleashed** is a community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top. See **What's new in this fork** below.
 
-[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)   [![API](https://img.shields.io/badge/API-22%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=22)    [![Build Status](https://img.shields.io/github/actions/workflow/status/LivingWithHippos/unchained-android/build.yaml?branch=master)](https://github.com/LivingWithHippos/unchained-android/actions)    [![Play Store](https://img.shields.io/badge/play%20store-available-brightgreen)](https://play.google.com/store/apps/details?id=com.github.livingwithhippos.unchained)      [![F Droid](https://img.shields.io/f-droid/v/com.github.livingwithhippos.unchained)](https://f-droid.org/packages/com.github.livingwithhippos.unchained/) [<img src="https://shields.rbtlog.dev/simple/com.github.livingwithhippos.unchained" alt="RB shield">](https://shields.rbtlog.dev/com.github.livingwithhippos.unchained) [<img src="https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.github.livingwithhippos.unchained">](https://apt.izzysoft.de/packages/com.github.livingwithhippos.unchained)
-
-
-<a href='https://f-droid.org/packages/com.github.livingwithhippos.unchained/'><img  alt='Get it on F Droid' src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" height="75"/></a>  <a href='https://apt.izzysoft.de/packages/com.github.livingwithhippos.unchained/'><img  alt='Get it on IzzyOnDroid' src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="75"/></a> <a href='https://play.google.com/store/apps/details?id=com.github.livingwithhippos.unchained'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height="75"/></a> 
-
-
-
-
+[![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)   [![API](https://img.shields.io/badge/API-22%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=22)
 
 App to interact with the [Real-Debrid](https://real-debrid.com/) and [TorBox](https://torbox.app/) APIs.
 
@@ -47,100 +40,8 @@ Everything from upstream Unchained, plus first-class **TorBox** support:
 - [x] user info
 - [x] themes
 
-### Screenshots :iphone:
-
-| User  | Downloads List | Download Details | New Download | Search |
-| ------------- | ------------- | ------------- |------------- |------------- |
-| <img width="150" src="/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png?raw=true" alt="User Screen"> | <img width="150" src="/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png?raw=true" alt="List of downloads"> | <img width="150" src="/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png?raw=true" alt="Download details screen">  | <img width="150" src="/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png?raw=true" alt="New download screen">  | <img width="150" src="/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png?raw=true" alt="Search screen">  |
-
-
-### Installation :calling:
-
-You have multiple options to install Unchained for Android:
-
-1. Get the [latest published release](https://github.com/LivingWithHippos/unchained-android/releases) from GitHub
-2. Get the latest build's zipped APK (possibly unstable) from [this link](https://nightly.link/LivingWithHippos/unchained-android/workflows/build.yaml/master) (master branch only) or from one of the [Actions](https://github.com/LivingWithHippos/unchained-android/actions) (you need to be logged in GitHub): click on the latest working workflow and scroll to the bottom of the summary section, extract the APK and install it
-3. Get the app on [Play Store](https://play.google.com/store/apps/details?id=com.github.livingwithhippos.unchained)
-4. Get the app on [F-Droid](https://f-droid.org/packages/com.github.livingwithhippos.unchained/)
-
-### Developing and Contributing :writing_hand:
-
-Contributions are welcome. You can use the [discussion tab](https://github.com/LivingWithHippos/unchained-android/discussions) to ask for help setting up the project. At the moment at least Android Studio 2021.1.1 is needed to build the project.
-
-The dev branch is the one where the development happens, it gets merged into master when a release is ready.
-
-A debug version is available, it reports automatically any crash information, it can be useful to help me debug errors.
-
-This app is written in Kotlin and uses the following architectures/patterns/libraries:
-
-MVVM architectural pattern, Dagger-Hilt for dependency injection, Data Binding for managing ui-data relations, Navigation, Moshi, Retrofit, OkHTTP, Room, Coroutines, Flow, Livedata, Coil
-
-The app is available in English, Italian, Spanish and French, ~~you can contribute to those or add a new language [here](https://localization.professiona.li/engage/unchained-for-android/) (much appreciated!)~~ (the service is currently down, you can still contribute by forking the project and adding the strings to the `strings.xml` file in the `values-xx` folders)
-
-#### Search Plugins
-
-[Notice: plugins have been moved to another repository](https://gitlab.com/LivingWithHippos/unchained-plugins)
-
-It's possible to create new plugins with a bit of knowledge of html and regexes. There's also a work in progress [wiki page](https://github.com/LivingWithHippos/unchained-android/wiki/Search-Engine), hopefully there will be more documentation including a video in the future.
-
-### Donate :coffee:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/E1E412NFX7)
-
-You can use [my referral link](http://real-debrid.com/?id=78841) to get Real Debrid premium.
-
-Offer me coffee or a beer with [Ko-Fi](https://ko-fi.com/livingwithhippos), [Liberapay](https://liberapay.com/LivingWithHippos/donate) (set renewal to manual to avoid recurring donation) <noscript><a href="https://liberapay.com/LivingWithHippos/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
-
-Send me a Bitcoin? Aha ha, just kidding… unless..?
-
-<details>
-<summary>Algorand (ALGO)</summary>
-<br>
-TO5D7VGONQRZR7P52EF2C3RJWLYNDA3E53F6SO3XCEGUHMSS3EH3D3TG6I
-</details>
-
-<details>
-<summary>Bitcoin (BTC)</summary>
-<br>
-1PNZXRz77idWGhbMTRTG8iAuqnYY6tatb7
-</details>
-
-<details>
-<summary>Ethereum (ETH)</summary>
-<br>
-0xf97bb71c898ac6d71c9fe065138b7134009f0599
-</details>
-
-<details>
-<summary>Litecoin (LTC)</summary>
-<br>
-LWeoBVVmaYAiZ3oGaLAV9sV2dvY62XxdCF
-</details>
-
-### Credits :crown:
-
-#### Beta testers
-
-- Oathzed
-
-#### Donors
-
-- DaisyF8
-- Roadhouse
-
-#### Translators
-
-- edgarpatronperez (spanish)
-- mikropsoft (turkish)
-- poihoii (korean)
-
-#### Media
+### Media
 
 Logo and symbols inspired by [minimal logo design set](https://www.rawpixel.com/image/843352/minimal-logo-designs-set) offered by [rawpixel.com](https://www.rawpixel.com)
 Icons by [Fluent UI](https://www.svgrepo.com/collection/fluent-ui-icons-outlined/) offered by [SVG Repo](https://www.svgrepo.com/)
 Backgrounds courtesy of [haikei](https://haikei.app/) and [SVG Backgrounds](https://www.svgbackgrounds.com/)
-
-### Thanks, Mr. Unchained :muscle:
-
-<a href="https://imgbb.com/"><img src="https://i.ibb.co/grzjQsT/Oliva.jpg" width=300 alt="Mr. Unchained" border="0"></a>
-
