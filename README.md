@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="300" src="https://raw.githubusercontent.com/LivingWithHippos/unchained-android/master/extra_assets/graphics/logo.svg">
+  <img width="300" src="https://raw.githubusercontent.com/aendryn/unchained-unleashed/main/extra_assets/graphics/logo.svg">
 </p>
 
 # Unchained Unleashed
