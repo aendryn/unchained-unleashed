@@ -13,7 +13,6 @@ import androidx.core.content.PermissionChecker
 import androidx.core.content.edit
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import coil.load
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthResult
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthViewModel
@@ -294,8 +293,6 @@ class UserProfileFragment : UnchainedFragment() {
         user?.let {
             binding.tvName.text = it.username
             binding.tvMail.text = it.email
-            // todo: check https://coil-kt.github.io/coil/image_loaders/#caching
-            binding.ivProfilePic.load(it.avatar) { crossfade(true) }
             if (it.premium > 0) {
                 binding.tvPremium.text = getString(R.string.premium)
             } else {
