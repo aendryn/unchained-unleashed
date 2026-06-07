@@ -14,14 +14,17 @@ import androidx.paging.cachedIn
 import androidx.paging.liveData
 import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
+import com.github.livingwithhippos.unchained.data.model.NetworkError
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.data.repository.DebridManager
 import com.github.livingwithhippos.unchained.data.repository.DownloadRepository
+import com.github.livingwithhippos.unchained.data.repository.TorBoxDownloadsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorBoxTorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.UnrestrictRepository
+import com.github.livingwithhippos.unchained.data.repository.isTorBoxDownload
 import com.github.livingwithhippos.unchained.lists.model.DownloadPagingSource
 import com.github.livingwithhippos.unchained.lists.model.UnifiedTorrentPagingSource
 import com.github.livingwithhippos.unchained.utilities.DOWNLOADS_TAB
@@ -46,6 +49,7 @@ constructor(
     private val downloadRepository: DownloadRepository,
     private val torrentsRepository: TorrentsRepository,
     private val torBoxTorrentsRepository: TorBoxTorrentsRepository,
+    private val torBoxDownloadsRepository: TorBoxDownloadsRepository,
     private val debridManager: DebridManager,
     private val unrestrictRepository: UnrestrictRepository,
 ) : ViewModel() {
@@ -62,7 +66,7 @@ constructor(
             val size = getPagingSize()
             val initialSize = max(size, INITIAL_LOAD)
             Pager(PagingConfig(pageSize = size, initialLoadSize = initialSize)) {
-                    DownloadPagingSource(downloadRepository, query)
+                    DownloadPagingSource(downloadRepository, torBoxDownloadsRepository, query)
                 }
                 .liveData
                 .cachedIn(viewModelScope)
@@ -91,12 +95,14 @@ constructor(
     val deletedTorrentLiveData = MutableLiveData<Event<Int>>()
     val deletedDownloadLiveData = MutableLiveData<Event<Int>>()
 
+    /** Downloads with links resolved and ready to enqueue (see [prepareDownloads]). */
+    val preparedDownloadLiveData = MutableLiveData<Event<List<DownloadItem>>>()
+
     val eventLiveData = MutableLiveData<Event<ListEvent>>()
 
     /**
-     * Un-restrict a torrent and move it to the download section. Only Real-Debrid is wired here;
-     * TorBox resolves links per-file via `requestdl` and is handled with the details migration
-     * (roadmap §6).
+     * Un-restrict a Real-Debrid torrent and move its links to the Downloads tab. The TorBox
+     * equivalent is [downloadTorBoxTorrent]; both are dispatched from [downloadItems].
      *
      * @param torrent
      */
@@ -154,6 +160,9 @@ constructor(
                     deletedDownloadLiveData.postEvent(index + 1)
             }
 
+            // The RD list above doesn't include locally stored TorBox downloads; clear those too.
+            torBoxDownloadsRepository.deleteAll()
+
             deletedDownloadLiveData.postEvent(DOWNLOADS_DELETED_ALL)
         }
     }
@@ -203,12 +212,74 @@ constructor(
     fun downloadItems(torrents: List<UnifiedTorrent>) {
         torrents
             .filter { it.status == UnifiedTorrentStatus.READY }
-            .forEach { unrestrictTorrent(it) }
+            .forEach { torrent ->
+                when (torrent.service) {
+                    DebridService.REAL_DEBRID -> unrestrictTorrent(torrent)
+                    DebridService.TORBOX -> downloadTorBoxTorrent(torrent)
+                }
+            }
+    }
+
+    /**
+     * TorBox equivalent of [unrestrictTorrent]: resolve every file's CDN link, store them locally
+     * and surface them in the Downloads tab. TorBox has no server-side downloads list, so the links
+     * are persisted via [TorBoxDownloadsRepository].
+     */
+    private fun downloadTorBoxTorrent(torrent: UnifiedTorrent) {
+        val torrentId = torrent.rawId.toLongOrNull() ?: return
+        viewModelScope.launch {
+            val raw = torBoxTorrentsRepository.getRawTorrentInfo(torrentId)
+            val files = raw?.files.orEmpty()
+            if (files.isEmpty()) {
+                errorsLiveData.postEvent(
+                    listOf(NetworkError(-1, "No downloadable files found for this torrent"))
+                )
+                return@launch
+            }
+            val errors = mutableListOf<UnchainedNetworkException>()
+            files.forEach { file ->
+                when (val link = torBoxTorrentsRepository.getDownloadLink(torrentId, file.id)) {
+                    is EitherResult.Success ->
+                        torBoxDownloadsRepository.save(
+                            torrentId = torrentId,
+                            fileId = file.id,
+                            fileName = file.shortName ?: file.name ?: torrent.name,
+                            size = file.size ?: 0L,
+                            mimeType = file.mimetype,
+                            downloadUrl = link.success,
+                        )
+                    is EitherResult.Failure -> errors.add(link.failure)
+                }
+            }
+            // Trigger the Downloads-tab switch + refresh (the observer only checks for non-empty).
+            downloadItemLiveData.postEvent(torBoxDownloadsRepository.getDownloads())
+            if (errors.isNotEmpty()) errorsLiveData.postEvent(errors)
+        }
+    }
+
+    /**
+     * Prepare a set of downloads for enqueueing. Real-Debrid items pass through unchanged; TorBox
+     * items get a freshly resolved link (their stored CDN link may have expired). The result is
+     * posted on [preparedDownloadLiveData] for the fragment to enqueue.
+     */
+    fun prepareDownloads(downloads: List<DownloadItem>) {
+        viewModelScope.launch {
+            val prepared = downloads.map { item ->
+                if (item.isTorBoxDownload())
+                    item.copy(download = torBoxDownloadsRepository.refreshLink(item))
+                else item
+            }
+            preparedDownloadLiveData.postEvent(prepared)
+        }
     }
 
     fun deleteDownloads(downloads: List<DownloadItem>) {
         viewModelScope.launch {
-            downloads.forEach { downloadRepository.deleteDownload(it.id) }
+            downloads.forEach {
+                // TorBox downloads live in the local store; Real-Debrid ones on the RD account.
+                if (it.isTorBoxDownload()) torBoxDownloadsRepository.delete(it.id)
+                else downloadRepository.deleteDownload(it.id)
+            }
             if (downloads.size > 1) deletedDownloadLiveData.postEvent(DOWNLOADS_DELETED)
             else deletedDownloadLiveData.postEvent(DOWNLOAD_DELETED)
         }

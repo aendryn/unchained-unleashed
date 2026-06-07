@@ -481,16 +481,10 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         }
         binding.bDownloadSelected.setOnClickListener {
             val downloads: List<DownloadItem> = downloadTracker.selection.toList()
-            if (downloads.isNotEmpty()) {
-                if (downloads.size == 1) {
-                    activityViewModel.enqueueDownload(
-                        downloads.first().download,
-                        downloads.first().filename,
-                    )
-                } else {
-                    activityViewModel.enqueueDownloads(downloads)
-                }
-            } else context?.showToast(R.string.select_one_item)
+            // Resolve fresh links (for TorBox items) before enqueueing; result comes back on
+            // preparedDownloadLiveData.
+            if (downloads.isNotEmpty()) viewModel.prepareDownloads(downloads)
+            else context?.showToast(R.string.select_one_item)
         }
         binding.bShareSelected.setOnClickListener {
             if (downloadTracker.selection.toList().isNotEmpty()) {
@@ -586,6 +580,21 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
                     downloadAdapter.refresh()
 
                     viewModel.postEventNotice(ListEvent.SetTab(DOWNLOADS_TAB))
+                }
+            },
+        )
+
+        viewModel.preparedDownloadLiveData.observe(
+            viewLifecycleOwner,
+            EventObserver { downloads ->
+                if (_binding == null || downloads.isEmpty()) return@EventObserver
+                if (downloads.size == 1) {
+                    activityViewModel.enqueueDownload(
+                        downloads.first().download,
+                        downloads.first().filename,
+                    )
+                } else {
+                    activityViewModel.enqueueDownloads(downloads)
                 }
             },
         )

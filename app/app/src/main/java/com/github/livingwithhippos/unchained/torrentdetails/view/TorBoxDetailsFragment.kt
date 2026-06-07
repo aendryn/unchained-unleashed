@@ -21,6 +21,7 @@ import com.github.livingwithhippos.unchained.torrentdetails.viewmodel.TorBoxDeta
 import com.github.livingwithhippos.unchained.torrentdetails.viewmodel.TorBoxLinkResult
 import com.github.livingwithhippos.unchained.utilities.extension.copyToClipboard
 import com.github.livingwithhippos.unchained.utilities.extension.openExternalWebPage
+import com.github.livingwithhippos.unchained.utilities.extension.openInExternalPlayer
 import com.github.livingwithhippos.unchained.utilities.extension.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,7 +61,7 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
         binding.bGetZip.setOnClickListener {
             if (torrentId < 0) return@setOnClickListener
             context?.showToast(R.string.torbox_resolving_link)
-            viewModel.resolveZipLink(torrentId)
+            viewModel.resolveZipLink(torrentId, binding.tvName.text.toString())
         }
 
         binding.bPauseResume.setOnClickListener {
@@ -85,7 +86,7 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
         viewModel.linkLiveData.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { result ->
                 when (result) {
-                    is TorBoxLinkResult.Resolved -> showLinkDialog(result.name, result.url)
+                    is TorBoxLinkResult.Resolved -> showLinkDialog(result)
                     TorBoxLinkResult.Error -> context?.showToast(R.string.torbox_link_error)
                 }
             }
@@ -106,6 +107,11 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
                     TorBoxActionResult.Resumed -> {
                         context?.showToast(R.string.torbox_resumed)
                         viewModel.loadTorrent(torrentId)
+                    }
+                    TorBoxActionResult.DownloadSaved -> {
+                        context?.showToast(R.string.torbox_download_added)
+                        activityViewModel.setListState(ListState.UpdateDownload)
+                        findNavController().popBackStack()
                     }
                     TorBoxActionResult.Error -> context?.showToast(R.string.torbox_action_error)
                 }
@@ -134,24 +140,32 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
         adapter.submitList(files)
     }
 
-    private fun showLinkDialog(name: String, url: String) {
-        // The three actions a resolved link supports. "Download" hands the CDN url to the same
-        // in-app downloader RealDebrid links use (system or OkHttp manager, with per-file progress
-        // notifications); the others just open or copy it.
+    private fun showLinkDialog(resolved: TorBoxLinkResult.Resolved) {
+        // The three actions a resolved link supports. "Download" sends it to the Downloads tab
+        // (like
+        // Real-Debrid unrestricted links), where the actual device download is started; the others
+        // just open or copy the link.
         val actions =
             arrayOf(
                 getString(R.string.download),
+                getString(R.string.send_to_player),
                 getString(R.string.torbox_open_link),
                 getString(R.string.torbox_copy_link),
             )
         MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.torbox_link_dialog_title, name))
+            .setTitle(getString(R.string.torbox_link_dialog_title, resolved.name))
             .setItems(actions) { _, which ->
                 when (which) {
-                    0 -> activityViewModel.enqueueDownload(url, name)
-                    1 -> context?.openExternalWebPage(url)
-                    2 -> {
-                        copyToClipboard("TorBox", url)
+                    0 -> viewModel.saveDownload(resolved)
+                    1 ->
+                        openInExternalPlayer(
+                            resolved.url,
+                            viewModel.getDefaultPlayer(),
+                            viewModel.getCustomPlayerPreference(),
+                        )
+                    2 -> context?.openExternalWebPage(resolved.url)
+                    3 -> {
+                        copyToClipboard("TorBox", resolved.url)
                         context?.showToast(R.string.link_copied)
                     }
                 }

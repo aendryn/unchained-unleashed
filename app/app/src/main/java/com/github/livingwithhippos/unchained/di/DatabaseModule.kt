@@ -9,6 +9,7 @@ import com.github.livingwithhippos.unchained.data.local.HostRegexDao
 import com.github.livingwithhippos.unchained.data.local.KodiDeviceDao
 import com.github.livingwithhippos.unchained.data.local.RemoteDeviceDao
 import com.github.livingwithhippos.unchained.data.local.RepositoryDataDao
+import com.github.livingwithhippos.unchained.data.local.TorBoxDownloadDao
 import com.github.livingwithhippos.unchained.data.local.UnchaineDB
 import com.github.livingwithhippos.unchained.data.model.REGEX_TYPE_HOST
 import dagger.Module
@@ -60,6 +61,11 @@ object DatabaseModule {
     @Provides
     fun provideCompleteServiceDao(database: UnchaineDB): CompleteRemoteServiceDao {
         return database.completeRemoteServiceDao()
+    }
+
+    @Provides
+    fun provideTorBoxDownloadDao(database: UnchaineDB): TorBoxDownloadDao {
+        return database.torBoxDownloadDao()
     }
 
     private val MIGRATION_1_2 =

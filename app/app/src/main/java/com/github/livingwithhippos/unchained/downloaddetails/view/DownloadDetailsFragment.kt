@@ -2,8 +2,6 @@ package com.github.livingwithhippos.unchained.downloaddetails.view
 
 import android.annotation.SuppressLint
 import android.app.UiModeManager
-import android.content.ActivityNotFoundException
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -23,7 +21,6 @@ import android.widget.TextView
 import androidx.appcompat.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.graphics.drawable.toDrawable
-import androidx.core.net.toUri
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.activityViewModels
@@ -42,6 +39,7 @@ import com.github.livingwithhippos.unchained.data.local.RemoteServiceType
 import com.github.livingwithhippos.unchained.data.local.serviceTypeMap
 import com.github.livingwithhippos.unchained.data.model.Alternative
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
+import com.github.livingwithhippos.unchained.data.repository.isTorBoxDownload
 import com.github.livingwithhippos.unchained.databinding.FragmentDownloadDetailsBinding
 import com.github.livingwithhippos.unchained.downloaddetails.model.AlternativeDownloadAdapter
 import com.github.livingwithhippos.unchained.downloaddetails.model.DownloadDetailsListener
@@ -55,6 +53,7 @@ import com.github.livingwithhippos.unchained.utilities.extension.copyToClipboard
 import com.github.livingwithhippos.unchained.utilities.extension.getAvailableSpace
 import com.github.livingwithhippos.unchained.utilities.extension.getFileSizeString
 import com.github.livingwithhippos.unchained.utilities.extension.openExternalWebPage
+import com.github.livingwithhippos.unchained.utilities.extension.openInExternalPlayer
 import com.github.livingwithhippos.unchained.utilities.extension.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -129,20 +128,24 @@ class DownloadDetailsFragment : UnchainedFragment(), DownloadDetailsListener {
             binding.tvType.visibility = View.VISIBLE
         }
         binding.fabShareLink.setOnClickListener {
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.type = "text/plain"
-            shareIntent.putExtra(Intent.EXTRA_TEXT, args.details.download)
-            startActivity(Intent.createChooser(shareIntent, getString(R.string.share_with)))
+            withFreshLink { url ->
+                val shareIntent = Intent(Intent.ACTION_SEND)
+                shareIntent.type = "text/plain"
+                shareIntent.putExtra(Intent.EXTRA_TEXT, url)
+                startActivity(Intent.createChooser(shareIntent, getString(R.string.share_with)))
+            }
         }
-        binding.fabOpenLink.setOnClickListener { onOpenClick(args.details.download) }
+        binding.fabOpenLink.setOnClickListener { withFreshLink { onOpenClick(it) } }
         binding.fabCopyLink.setOnClickListener {
-            copyToClipboard("Real-Debrid Download Link", args.details.download)
-            context?.showToast(R.string.link_copied)
+            withFreshLink { url ->
+                copyToClipboard("Download Link", url)
+                context?.showToast(R.string.link_copied)
+            }
         }
         binding.fabDownloadLink.setOnClickListener {
-            onDownloadClick(args.details.download, args.details.filename)
+            withFreshLink { onDownloadClick(it, args.details.filename) }
         }
-        binding.fabSendToPlayer.setOnClickListener { onSendToPlayer(args.details.download) }
+        binding.fabSendToPlayer.setOnClickListener { withFreshLink { onSendToPlayer(it) } }
         if (!args.details.alternative.isNullOrEmpty()) {
             binding.rvAlternativeList.visibility = View.VISIBLE
         } else {
@@ -199,13 +202,25 @@ class DownloadDetailsFragment : UnchainedFragment(), DownloadDetailsListener {
             binding.llFabLoadStreams.visibility = View.GONE
         }
 
+        if (args.details.isTorBoxDownload()) {
+            // TorBox has no transcoding endpoint, so hide the RD-only "load streams" button. Direct
+            // playback (send-to-player) and casting to Kodi/VLC still work via the resolved link.
+            binding.llFabLoadStreams.visibility = View.GONE
+        }
+
         binding.fabLoadStreams.setOnClickListener { onLoadStreamsClick(args.details.id) }
 
         if (args.details.alternative.isNullOrEmpty()) {
             binding.fabLoadStreams.isEnabled = false
         }
 
-        binding.fabPickStreaming.setOnClickListener { popView -> manageStreamingPopup(popView) }
+        binding.fabPickStreaming.setOnClickListener { popView ->
+            // For TorBox, pass a freshly resolved link so casting uses a live URL; this also hides
+            // the RD-only "stream in browser" option in the popup.
+            if (args.details.isTorBoxDownload())
+                withFreshLink { url -> manageStreamingPopup(popView, url) }
+            else manageStreamingPopup(popView)
+        }
 
         viewModel.streamLiveData.observe(viewLifecycleOwner) {
             if (it != null) {
@@ -320,6 +335,24 @@ class DownloadDetailsFragment : UnchainedFragment(), DownloadDetailsListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    /**
+     * Run [action] with a usable link. Real-Debrid links are used as-is; TorBox links are
+     * re-resolved first (their CDN links are temporary) so downloads and playback don't use a stale
+     * URL.
+     */
+    private fun withFreshLink(action: (String) -> Unit) {
+        val item = args.details
+        if (!item.isTorBoxDownload()) {
+            action(item.download)
+            return
+        }
+        context?.showToast(R.string.torbox_resolving_link)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val url = viewModel.freshLink(item)
+            if (_binding != null) action(url)
+        }
     }
 
     private fun showBasicStreamingPopup(v: View, url: String?) {
@@ -570,30 +603,6 @@ class DownloadDetailsFragment : UnchainedFragment(), DownloadDetailsListener {
         return popup
     }
 
-    private fun tryStartExternalApp(intent: Intent) {
-        try {
-            startActivity(intent)
-        } catch (e: ActivityNotFoundException) {
-            context?.showToast(R.string.app_not_installed)
-        }
-    }
-
-    private fun createMediaIntent(
-        appPackage: String,
-        url: String,
-        component: ComponentName? = null,
-        dataType: String = "video/*",
-    ): Intent {
-
-        val uri = url.toUri()
-        val intent = Intent(Intent.ACTION_VIEW)
-        intent.setPackage(appPackage)
-        intent.setDataAndTypeAndNormalize(uri, dataType)
-        if (component != null) intent.component = component
-
-        return intent
-    }
-
     override fun onCopyClick(text: String) {
         copyToClipboard("Real-Debrid Download Link", text)
         context?.showToast(R.string.link_copied)
@@ -631,57 +640,11 @@ class DownloadDetailsFragment : UnchainedFragment(), DownloadDetailsListener {
     }
 
     override fun onSendToPlayer(url: String) {
-        when (viewModel.getDefaultPlayer()) {
-            "vlc" -> {
-                val vlcIntent = createMediaIntent("org.videolan.vlc", url)
-                tryStartExternalApp(vlcIntent)
-            }
-
-            "mpv" -> {
-                val mpvIntent = createMediaIntent("is.xyz.mpv", url)
-                tryStartExternalApp(mpvIntent)
-            }
-
-            "mx_player" -> {
-                val mxIntent = createMediaIntent("com.mxtech.videoplayer.pro", url)
-
-                try {
-                    startActivity(mxIntent)
-                } catch (e: ActivityNotFoundException) {
-                    mxIntent.setPackage("com.mxtech.videoplayer.ad")
-                    tryStartExternalApp(mxIntent)
-                }
-            }
-
-            "web_video_cast" -> {
-                val wvcIntent = createMediaIntent("com.instantbits.cast.webvideo", url)
-                tryStartExternalApp(wvcIntent)
-            }
-
-            "play_it" -> {
-                val wvcIntent = createMediaIntent("com.playit.videoplayer", url)
-                tryStartExternalApp(wvcIntent)
-            }
-
-            "player_just_video" -> {
-                val wvcIntent = createMediaIntent("com.brouken.player", url)
-                tryStartExternalApp(wvcIntent)
-            }
-
-            "custom_player" -> {
-                val customPlayerPackage = viewModel.getCustomPlayerPreference()
-                if (customPlayerPackage.isBlank()) {
-                    context?.showToast(R.string.invalid_package)
-                } else {
-                    val customIntent = createMediaIntent(customPlayerPackage, url)
-                    tryStartExternalApp(customIntent)
-                }
-            }
-
-            else -> {
-                context?.showToast(R.string.missing_default_player)
-            }
-        }
+        openInExternalPlayer(
+            url,
+            viewModel.getDefaultPlayer(),
+            viewModel.getCustomPlayerPreference(),
+        )
     }
 
     companion object {

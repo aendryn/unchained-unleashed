@@ -8,13 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.github.livingwithhippos.unchained.data.local.CompleteRemoteService
 import com.github.livingwithhippos.unchained.data.local.CompleteRemoteServiceDetails
 import com.github.livingwithhippos.unchained.data.local.RemoteServiceType
+import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.KodiDevice
 import com.github.livingwithhippos.unchained.data.model.Stream
 import com.github.livingwithhippos.unchained.data.repository.DownloadRepository
 import com.github.livingwithhippos.unchained.data.repository.KodiRepository
 import com.github.livingwithhippos.unchained.data.repository.ServiceRepository
 import com.github.livingwithhippos.unchained.data.repository.StreamingRepository
+import com.github.livingwithhippos.unchained.data.repository.TorBoxDownloadsRepository
 import com.github.livingwithhippos.unchained.data.repository.VLCRemoteRepository
+import com.github.livingwithhippos.unchained.data.repository.isTorBoxDownload
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import com.github.livingwithhippos.unchained.utilities.Event
 import com.github.livingwithhippos.unchained.utilities.postEvent
@@ -32,6 +35,7 @@ constructor(
     private val preferences: SharedPreferences,
     private val streamingRepository: StreamingRepository,
     private val downloadRepository: DownloadRepository,
+    private val torBoxDownloadsRepository: TorBoxDownloadsRepository,
     private val kodiRepository: KodiRepository,
     private val remoteServiceRepository: VLCRemoteRepository,
     private val serviceRepository: ServiceRepository,
@@ -42,6 +46,13 @@ constructor(
     val messageLiveData = MutableLiveData<Event<DownloadDetailsMessage>>()
     val eventLiveData = MutableLiveData<Event<DownloadEvent>>()
 
+    /**
+     * Resolve a fresh link for a TorBox download right before it's downloaded or played (its stored
+     * CDN link may have expired). Real-Debrid items return their existing link unchanged.
+     */
+    suspend fun freshLink(item: DownloadItem): String =
+        if (item.isTorBoxDownload()) torBoxDownloadsRepository.refreshLink(item) else item.download
+
     fun fetchStreamingInfo(id: String) {
         viewModelScope.launch {
             val streamingInfo = streamingRepository.getStreams(id)
@@ -51,9 +62,15 @@ constructor(
 
     fun deleteDownload(id: String) {
         viewModelScope.launch {
-            val deleted = downloadRepository.deleteDownload(id)
-            if (deleted == null) deletedDownloadLiveData.postEvent(-1)
-            else deletedDownloadLiveData.postEvent(1)
+            if (id.startsWith(TorBoxDownloadsRepository.TORBOX_DOWNLOAD_ID_PREFIX)) {
+                // Locally stored TorBox download: delete from the local store, not the RD API.
+                torBoxDownloadsRepository.delete(id)
+                deletedDownloadLiveData.postEvent(1)
+            } else {
+                val deleted = downloadRepository.deleteDownload(id)
+                if (deleted == null) deletedDownloadLiveData.postEvent(-1)
+                else deletedDownloadLiveData.postEvent(1)
+            }
         }
     }
 

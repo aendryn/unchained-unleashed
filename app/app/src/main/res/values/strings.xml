@@ -818,6 +818,7 @@
     <string name="torbox_resolving_link">Resolving link…</string>
     <string name="torbox_link_error">Couldn\'t resolve the download link</string>
     <string name="torbox_torrent_deleted">Torrent deleted</string>
+    <string name="torbox_download_added">Added to Downloads</string>
     <string name="torbox_action_error">Action failed</string>
     <string name="torbox_paused">Paused</string>
     <string name="torbox_resumed">Resumed</string>

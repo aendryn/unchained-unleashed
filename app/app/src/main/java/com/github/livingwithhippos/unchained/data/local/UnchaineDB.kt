@@ -9,6 +9,7 @@ import com.github.livingwithhippos.unchained.data.model.PluginVersion
 import com.github.livingwithhippos.unchained.data.model.Repository
 import com.github.livingwithhippos.unchained.data.model.RepositoryInfo
 import com.github.livingwithhippos.unchained.data.model.RepositoryPlugin
+import com.github.livingwithhippos.unchained.data.model.TorBoxDownload
 
 /** Annotates class to be a Room Database with a table (entity) of the Credentials class */
 @Database(
@@ -23,8 +24,9 @@ import com.github.livingwithhippos.unchained.data.model.RepositoryPlugin
             RemoteDevice::class,
             RemoteService::class,
             CompleteRemoteService::class,
+            TorBoxDownload::class,
         ],
-    version = 10,
+    version = 11,
     exportSchema = true,
     autoMigrations =
         [
@@ -32,6 +34,7 @@ import com.github.livingwithhippos.unchained.data.model.RepositoryPlugin
             AutoMigration(from = 5, to = 6),
             AutoMigration(from = 6, to = 7),
             AutoMigration(from = 7, to = 8),
+            AutoMigration(from = 10, to = 11),
         ],
 )
 abstract class UnchaineDB : RoomDatabase() {
@@ -44,4 +47,6 @@ abstract class UnchaineDB : RoomDatabase() {
     abstract fun remoteDeviceDao(): RemoteDeviceDao
 
     abstract fun completeRemoteServiceDao(): CompleteRemoteServiceDao
+
+    abstract fun torBoxDownloadDao(): TorBoxDownloadDao
 }
