@@ -18,7 +18,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.base.MainActivity
-import com.github.livingwithhippos.unchained.data.model.TorrentItem
+import com.github.livingwithhippos.unchained.data.model.DebridService
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
+import com.github.livingwithhippos.unchained.data.model.toUnified
+import com.github.livingwithhippos.unchained.data.repository.DebridManager
+import com.github.livingwithhippos.unchained.data.repository.TorBoxTorrentsRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
 import com.github.livingwithhippos.unchained.di.TorrentNotification
 import com.github.livingwithhippos.unchained.di.TorrentSummaryNotification
@@ -26,7 +31,6 @@ import com.github.livingwithhippos.unchained.settings.view.SettingsFragment
 import com.github.livingwithhippos.unchained.utilities.PreferenceKeys
 import com.github.livingwithhippos.unchained.utilities.extension.getStatusTranslation
 import com.github.livingwithhippos.unchained.utilities.extension.vibrate
-import com.github.livingwithhippos.unchained.utilities.loadingStatusList
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -42,9 +46,13 @@ class ForegroundTorrentService : LifecycleService() {
 
     @Inject lateinit var torrentRepository: TorrentsRepository
 
+    @Inject lateinit var torBoxTorrentsRepository: TorBoxTorrentsRepository
+
+    @Inject lateinit var debridManager: DebridManager
+
     private val torrentBinder = TorrentBinder()
 
-    private val torrentsLiveData = MutableLiveData<List<TorrentItem>>()
+    private val torrentsLiveData = MutableLiveData<List<UnifiedTorrent>>()
 
     @Inject @TorrentSummaryNotification lateinit var summaryBuilder: NotificationCompat.Builder
 
@@ -85,28 +93,28 @@ class ForegroundTorrentService : LifecycleService() {
     private fun startForegroundService() {
         torrentsLiveData.observe(this) { list ->
             // todo: manage removed torrents (right now they just stop updating)
-            // the torrents we were observing
+            // the torrents we were observing (keyed by unifiedId so both services coexist)
             val oldTorrentsIDs: Set<String> =
                 preferences.getStringSet(KEY_OBSERVED_TORRENTS, emptySet()) as Set<String>
             // their updated status
-            val newLoadingTorrents = list.filter { torrent ->
-                loadingStatusList.contains(torrent.status.lowercase())
-            }
+            val newLoadingTorrents = list.filter { torrent -> torrent.isLoading() }
             // the torrent whose status is not a loading one anymore.
             val finishedTorrents =
                 list
                     // They are in our old list
-                    .filter { oldTorrentsIDs.contains(it.id) }
+                    .filter { oldTorrentsIDs.contains(it.unifiedId) }
                     // They aren't in our new loading list
-                    .filter { !newLoadingTorrents.map { newT -> newT.id }.contains(it.id) }
+                    .filter {
+                        !newLoadingTorrents.map { newT -> newT.unifiedId }.contains(it.unifiedId)
+                    }
             /*
             // the new torrents to add to the notification system
-            val unwatchedTorrents = newLoadingTorrents.filter { !oldTorrentsIDs.contains(it.id) }
+            val unwatchedTorrents = newLoadingTorrents.filter { !oldTorrentsIDs.contains(it.unifiedId) }
             // the torrents not in our updated list anymore. These needs to be retrieved and analyzed singularly.
             // Shouldn't happen often since there is a limit on how many active torrents you can have in real-debrid,
             // and we retrieve the last 30 torrents every time
             val missingTorrents = oldTorrentsIDs.filter { id ->
-                !list.map { it.id }.contains(id)
+                !list.map { it.unifiedId }.contains(id)
             }
              */
 
@@ -115,7 +123,7 @@ class ForegroundTorrentService : LifecycleService() {
 
             // update the torrents id to observe
             val newIDs = mutableSetOf<String>()
-            newIDs.addAll(newLoadingTorrents.map { it.id })
+            newIDs.addAll(newLoadingTorrents.map { it.unifiedId })
             preferences.edit { putStringSet(KEY_OBSERVED_TORRENTS, newIDs) }
             updateTiming = if (newIDs.isEmpty()) UPDATE_TIMING_LONG else UPDATE_TIMING_SHORT
 
@@ -175,9 +183,7 @@ class ForegroundTorrentService : LifecycleService() {
                     ) {
                         // if there are no active torrents and the services has been started
                         // for at least some minutes, stop the service
-                        val unfinishedTorrents = torrentList.count {
-                            loadingStatusList.contains(it.status)
-                        }
+                        val unfinishedTorrents = torrentList.count { it.isLoading() }
                         if (unfinishedTorrents == 0) {
                             Timber.i(
                                 "Service has been running and no torrents are active, stopping it."
@@ -195,19 +201,36 @@ class ForegroundTorrentService : LifecycleService() {
         }
     }
 
-    private suspend fun getTorrentList(max: Int = 30): List<TorrentItem> {
-        return torrentRepository.getTorrentsList(limit = max)
+    /**
+     * Fetches the in-progress torrents from every authenticated service and merges them into a
+     * single backend-agnostic list. Each service is guarded by its own auth check so a user signed
+     * in to only one of them never triggers a call to the other.
+     */
+    private suspend fun getTorrentList(max: Int = 30): List<UnifiedTorrent> {
+        val merged = mutableListOf<UnifiedTorrent>()
+        if (debridManager.isRealDebridAuthenticated()) {
+            try {
+                merged += torrentRepository.getTorrentsList(limit = max).map { it.toUnified() }
+            } catch (ex: IllegalArgumentException) {
+                // no valid RD token ready yet, skip this cycle
+            }
+        }
+        if (debridManager.isTorBoxAuthenticated()) {
+            // the TorBox repository already returns UnifiedTorrent and swallows its own errors
+            merged += torBoxTorrentsRepository.getTorrentsList(limit = max)
+        }
+        return merged
     }
 
-    private fun updateNotification(items: List<TorrentItem>) {
+    private fun updateNotification(items: List<UnifiedTorrent>) {
 
         val notifications: MutableMap<String, Notification> = mutableMapOf()
 
         items.forEach { torrent ->
-            torrentBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(torrent.filename))
+            torrentBuilder.setStyle(NotificationCompat.BigTextStyle().bigText(torrent.name))
 
-            if (torrent.status == "downloading") {
-                val speedMBs = (torrent.speed ?: 0).toFloat().div(1000000)
+            if (torrent.status == UnifiedTorrentStatus.DOWNLOADING) {
+                val speedMBs = (torrent.speed ?: 0L).toFloat().div(1000000)
                 torrentBuilder
                     .setProgress(100, torrent.progress.toInt(), false)
                     .setContentTitle(
@@ -216,7 +239,7 @@ class ForegroundTorrentService : LifecycleService() {
                     .setOngoing(true)
             } else {
                 torrentBuilder
-                    .setContentTitle(applicationContext.getStatusTranslation(torrent.status))
+                    .setContentTitle(applicationContext.getStatusTranslation(torrent.rawStatus))
                     // note: this could be indeterminate = true since it's technically in a loading
                     // status
                     // which should change
@@ -224,26 +247,9 @@ class ForegroundTorrentService : LifecycleService() {
                     .setOngoing(false)
             }
 
-            val resultIntent =
-                Intent(this, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    putExtra(KEY_TORRENT_ID, torrent.id)
-                }
+            torrentBuilder.setContentIntent(notificationIntent(torrent))
 
-            val resultPendingIntent: PendingIntent? =
-                TaskStackBuilder.create(this).run {
-                    // Add the intent, which inflates the back stack
-                    addNextIntentWithParentStack(resultIntent)
-                    // Get the PendingIntent containing the entire back stack
-                    getPendingIntent(
-                        torrent.id.hashCode(),
-                        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                    )
-                }
-
-            torrentBuilder.setContentIntent(resultPendingIntent)
-
-            notifications[torrent.id] = torrentBuilder.build()
+            notifications[torrent.unifiedId] = torrentBuilder.build()
         }
         // will open the app on the torrent details page
         summaryBuilder.setContentText(getString(R.string.downloading_torrent_format, items.size))
@@ -255,38 +261,46 @@ class ForegroundTorrentService : LifecycleService() {
         }
     }
 
-    private fun completeNotification(item: TorrentItem) {
-
-        val resultIntent =
-            Intent(this, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                putExtra(KEY_TORRENT_ID, item.id)
-            }
-
-        val resultPendingIntent: PendingIntent? =
-            TaskStackBuilder.create(this).run {
-                // Add the intent, which inflates the back stack
-                addNextIntentWithParentStack(resultIntent)
-                // Get the PendingIntent containing the entire back stack
-                getPendingIntent(
-                    item.id.hashCode(),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                )
-            }
+    private fun completeNotification(item: UnifiedTorrent) {
 
         notificationManager.apply {
             torrentBuilder
-                .setContentTitle(applicationContext.getStatusTranslation(item.status))
+                .setContentTitle(applicationContext.getStatusTranslation(item.rawStatus))
                 // if the file is already downloaded the second row will not be set elsewhere
-                .setStyle(NotificationCompat.BigTextStyle().bigText(item.filename))
+                .setStyle(NotificationCompat.BigTextStyle().bigText(item.name))
                 // remove the progressbar if present
                 .setProgress(0, 0, false)
                 // set click intent
-                .setContentIntent(resultPendingIntent)
+                .setContentIntent(notificationIntent(item))
                 // remove notification on tap
                 .setAutoCancel(true)
                 .setOngoing(false)
-            notify(item.id.hashCode(), torrentBuilder.build())
+            notify(item.unifiedId.hashCode(), torrentBuilder.build())
+        }
+    }
+
+    /**
+     * Builds the tap intent for a torrent notification. RealDebrid items deep-link straight to
+     * their details screen via [KEY_TORRENT_ID]; TorBox doesn't have that deep link wired in
+     * [MainActivity] yet, so its notifications just reopen the app on the list.
+     */
+    private fun notificationIntent(torrent: UnifiedTorrent): PendingIntent? {
+        val resultIntent =
+            Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                if (torrent.service == DebridService.REAL_DEBRID) {
+                    putExtra(KEY_TORRENT_ID, torrent.rawId)
+                }
+            }
+
+        return TaskStackBuilder.create(this).run {
+            // Add the intent, which inflates the back stack
+            addNextIntentWithParentStack(resultIntent)
+            // Get the PendingIntent containing the entire back stack
+            getPendingIntent(
+                torrent.unifiedId.hashCode(),
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+            )
         }
     }
 
@@ -308,5 +322,18 @@ class ForegroundTorrentService : LifecycleService() {
         const val UPDATE_TIMING_LONG: Long = 30000
         const val SUMMARY_ID: Int = 21
         const val KEY_TORRENT_ID = "torrent_id_key"
+
+        /** Statuses the torrent is still expected to advance from, across both services. */
+        private val LOADING_STATUSES =
+            setOf(
+                UnifiedTorrentStatus.QUEUED,
+                UnifiedTorrentStatus.DOWNLOADING_METADATA,
+                UnifiedTorrentStatus.DOWNLOADING,
+                UnifiedTorrentStatus.UPLOADING,
+                UnifiedTorrentStatus.STALLED,
+                UnifiedTorrentStatus.PROCESSING,
+            )
+
+        private fun UnifiedTorrent.isLoading(): Boolean = LOADING_STATUSES.contains(status)
     }
 }

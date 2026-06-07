@@ -103,6 +103,16 @@ class AuthenticationFragment : UnchainedFragment() {
             binding.tiTorBoxKey.hideKeyboard()
         }
 
+        // If TorBox is already connected (e.g. the user is here only to add Real-Debrid), don't
+        // offer the "Connect TorBox" flow again — show the connected state instead, mirroring the
+        // accounts hub.
+        if (torBoxAuthViewModel.isAuthenticated()) {
+            binding.tvUseTorBox.text =
+                getString(R.string.torbox_connected_summary, torBoxAuthViewModel.getMaskedKey())
+            binding.tfTorBoxKey.visibility = View.GONE
+            binding.bInsertTorBox.visibility = View.GONE
+        }
+
         torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { result ->
                 when (result) {

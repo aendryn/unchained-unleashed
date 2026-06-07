@@ -135,15 +135,26 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
     }
 
     private fun showLinkDialog(name: String, url: String) {
+        // The three actions a resolved link supports. "Download" hands the CDN url to the same
+        // in-app downloader RealDebrid links use (system or OkHttp manager, with per-file progress
+        // notifications); the others just open or copy it.
+        val actions =
+            arrayOf(
+                getString(R.string.download),
+                getString(R.string.torbox_open_link),
+                getString(R.string.torbox_copy_link),
+            )
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.torbox_link_dialog_title, name))
-            .setMessage(url)
-            .setNeutralButton(R.string.torbox_copy_link) { _, _ ->
-                copyToClipboard("TorBox", url)
-                context?.showToast(R.string.link_copied)
-            }
-            .setPositiveButton(R.string.torbox_open_link) { _, _ ->
-                context?.openExternalWebPage(url)
+            .setItems(actions) { _, which ->
+                when (which) {
+                    0 -> activityViewModel.enqueueDownload(url, name)
+                    1 -> context?.openExternalWebPage(url)
+                    2 -> {
+                        copyToClipboard("TorBox", url)
+                        context?.showToast(R.string.link_copied)
+                    }
+                }
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
