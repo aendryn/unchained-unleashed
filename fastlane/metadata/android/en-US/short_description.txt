@@ -1,1 +1,1 @@
-App to interact with Real Debrid
+App to interact with the Real-Debrid and TorBox debrid services

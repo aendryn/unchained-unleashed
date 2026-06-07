@@ -2,7 +2,9 @@
   <img width="300" src="https://raw.githubusercontent.com/LivingWithHippos/unchained-android/master/extra_assets/graphics/logo.svg">
 </p>
 
-# Unchained for Android
+# Unchained Unleashed
+
+> **Unchained Unleashed** is a community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top. See **What's new in this fork** below.
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)   [![API](https://img.shields.io/badge/API-22%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=22)    [![Build Status](https://img.shields.io/github/actions/workflow/status/LivingWithHippos/unchained-android/build.yaml?branch=master)](https://github.com/LivingWithHippos/unchained-android/actions)    [![Play Store](https://img.shields.io/badge/play%20store-available-brightgreen)](https://play.google.com/store/apps/details?id=com.github.livingwithhippos.unchained)      [![F Droid](https://img.shields.io/f-droid/v/com.github.livingwithhippos.unchained)](https://f-droid.org/packages/com.github.livingwithhippos.unchained/) [<img src="https://shields.rbtlog.dev/simple/com.github.livingwithhippos.unchained" alt="RB shield">](https://shields.rbtlog.dev/com.github.livingwithhippos.unchained) [<img src="https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.github.livingwithhippos.unchained">](https://apt.izzysoft.de/packages/com.github.livingwithhippos.unchained)
 
@@ -13,22 +15,32 @@
 
 
 
-App to interact with [Real Debrid](https://real-debrid.com/) APIs.
+App to interact with the [Real-Debrid](https://real-debrid.com/) and [TorBox](https://torbox.app/) APIs.
 
-### What is Real Debrid :question:
+### What is Real-Debrid / TorBox :question:
 
-Real Debrid is a service to download files from hosting websites and the torrent network.
-Files are downloaded directly on their servers that you can then use for your downloads.
-They provide high speeds for a lot of services like Mega and RapidGator without needing 
-all their premium accounts, and can also stream media files directly. 
-**N.B. Real Debrid is a (cheap) paid service**
+[Real-Debrid](https://real-debrid.com/) and [TorBox](https://torbox.app/) are *debrid* services: they
+download files from hosting websites and the torrent network onto their own servers, which you can
+then download or stream at high speed without needing premium accounts on every hoster.
+**N.B. both are (cheap) paid services.** This fork lets you sign in to either one, or both at the
+same time.
+
+### What's new in this fork :rocket:
+
+Everything from upstream Unchained, plus first-class **TorBox** support:
+
+- [x] sign in with **Real-Debrid and/or TorBox** — the app works with either alone or both together
+- [x] unified torrents list across both services, with a per-row badge showing which one each item is on
+- [x] per-download **service selector** when adding a magnet/torrent (Real-Debrid / TorBox / Both)
+- [x] TorBox torrent details: file list, pause / resume / delete, and on-demand link resolution
+- [x] resolved TorBox links handed to the in-app downloader (with per-file progress notifications)
+- [x] foreground torrent notifications cover **both** services
+- [x] redesigned User and Settings screens with distinct per-service cards/sections
 
 ### Features :memo:
 
-You can take a look at the project [here](https://github.com/LivingWithHippos/unchained-android/projects/1) for general status.
-
 - [x] magnets/torrents support
-- [x] file hosting services support
+- [x] file hosting services support (Real-Debrid)
 - [x] streaming support (needs a player that supports streaming like mpv or VLC)
 - [x] search websites for files with plugins
 - [x] containers support

@@ -1,11 +1,16 @@
-Unchained for Android is a free and open-source app interfacing with Real Debrid. Forget your computer and unchain the power of Real Debrid on mobile! Just log in to your account, and you're ready.
+Unchained Unleashed is a free and open-source app interfacing with the Real-Debrid and TorBox debrid services. Forget your computer and unchain the power of debrid on mobile! Just log in to your account(s), and you're ready.
 
-Why use Unchained? 📝
+It is a community fork of Unchained for Android by LivingWithHippos that adds TorBox support alongside Real-Debrid. All credit for the original app goes to the upstream project and its contributors.
 
-- download from all the available hosters
-- add torrent files and magnet links
+Why use Unchained Unleashed? 📝
+
+- sign in with Real-Debrid and/or TorBox — use either one alone, or both together
+- download from all the available hosters (Real-Debrid)
+- add torrent files and magnet links, and pick which service handles each one
+- a unified torrents list across both services, with per-file link resolution
+- foreground notifications that track torrents on both services
 - unlock all the features with the private API key
 - keep your subscription under control
 - free and without ads
 
-Note: this app requires a paid Real Debrid account to work
+Note: this app requires a paid Real-Debrid and/or TorBox account to work
