@@ -43,7 +43,10 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.github.livingwithhippos.unchained"
+        // Distinct from upstream so this fork installs alongside the original
+        // Unchained instead of replacing it. The code namespace stays as the
+        // upstream package to avoid touching the whole source tree.
+        applicationId = "com.github.aendryn.unchainedunleashed"
         minSdk = 27
         targetSdk = 37
         versionCode = 59
