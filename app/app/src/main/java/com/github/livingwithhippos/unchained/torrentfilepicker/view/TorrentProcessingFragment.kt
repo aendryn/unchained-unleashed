@@ -116,10 +116,19 @@ class TorrentProcessingFragment : UnchainedFragment(), TorrentContentListener {
                                         as TorrentContentFilesSelectionAdapter)
                                     .submitList(filesList)
                                 binding.rvTorrentFilePicker.adapter?.notifyDataSetChanged()
-                            }
 
-                            binding.loadingLayout.visibility = View.INVISIBLE
-                            binding.loadedLayout.visibility = View.VISIBLE
+                                binding.loadingLayout.visibility = View.INVISIBLE
+                                binding.loadedLayout.visibility = View.VISIBLE
+                            } else {
+                                // Real-Debrid hasn't produced the file list yet (still resolving
+                                // the
+                                // magnet after our polling window). Don't show an empty picker —
+                                // the torrent keeps converting on Real-Debrid, so let the user know
+                                // and return to the list, where they can reopen it once it's ready.
+                                context?.showToast(R.string.torrent_still_processing)
+                                activityViewModel.setListState(ListState.UpdateTorrent)
+                                findNavController().popBackStack(R.id.list_tabs_dest, false)
+                            }
                         }
                     }
                 }

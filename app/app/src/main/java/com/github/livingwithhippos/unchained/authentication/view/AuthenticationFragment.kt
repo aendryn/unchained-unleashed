@@ -106,11 +106,36 @@ class AuthenticationFragment : UnchainedFragment() {
         // If TorBox is already connected (e.g. the user is here only to add Real-Debrid), don't
         // offer the "Connect TorBox" flow again — show the connected state instead, mirroring the
         // accounts hub.
-        if (torBoxAuthViewModel.isAuthenticated()) {
+        val torBoxAlreadyConnected = torBoxAuthViewModel.isAuthenticated()
+        // Reached from the accounts hub to attach TorBox to an account that is already signed in to
+        // Real-Debrid: show only the TorBox key entry and, crucially, don't let the replayed
+        // "authenticated" state bounce us straight back to the user screen.
+        val addingTorBoxToAccount =
+            !torBoxAlreadyConnected &&
+                activityViewModel.getCurrentAuthenticationStatus() ==
+                    CurrentFSMAuthentication.Authenticated
+
+        if (torBoxAlreadyConnected) {
             binding.tvUseTorBox.text =
                 getString(R.string.torbox_connected_summary, torBoxAuthViewModel.getMaskedKey())
             binding.tfTorBoxKey.visibility = View.GONE
             binding.bInsertTorBox.visibility = View.GONE
+        } else if (addingTorBoxToAccount) {
+            // no Real-Debrid section above, so drop the "Or " prefix
+            binding.tvUseTorBox.text = getString(R.string.torbox_login_message_standalone)
+            listOf(
+                    binding.tvLoginMessage,
+                    binding.tvAuthenticationLink,
+                    binding.cbLink,
+                    binding.cbSecret,
+                    binding.llUserCode,
+                    binding.cbToken,
+                    binding.tvUsePrivateToken,
+                    binding.tfPrivateCode,
+                    binding.bPastePrivateCode,
+                    binding.bInsertPrivate,
+                )
+                .forEach { it.visibility = View.GONE }
         }
 
         torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->
@@ -146,7 +171,20 @@ class AuthenticationFragment : UnchainedFragment() {
 
         activityViewModel.fsmAuthenticationState.observe(viewLifecycleOwner) {
             if (it != null) {
-                when (it.peekContent()) {
+                val state = it.peekContent()
+                // When we entered this screen only to attach TorBox to an already authenticated
+                // account, ignore the replayed Real-Debrid "authenticated" states that would
+                // otherwise navigate us straight back to the user screen. The successful TorBox
+                // connection is handled separately by the authResult observer above.
+                if (
+                    addingTorBoxToAccount &&
+                        (state == FSMAuthenticationState.AuthenticatedOpenToken ||
+                            state == FSMAuthenticationState.AuthenticatedPrivateToken ||
+                            state == FSMAuthenticationState.AuthenticatedTorBox)
+                ) {
+                    return@observe
+                }
+                when (state) {
                     FSMAuthenticationState.AuthenticatedOpenToken -> {
                         val action = AuthenticationFragmentDirections.actionAuthenticationToUser()
                         findNavController().navigate(action)

@@ -44,6 +44,7 @@ import com.github.livingwithhippos.unchained.utilities.extension.isSimpleWebUrl
 import com.github.livingwithhippos.unchained.utilities.extension.isTorrent
 import com.github.livingwithhippos.unchained.utilities.extension.isWebUrl
 import com.github.livingwithhippos.unchained.utilities.extension.showToast
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.IOException
 import kotlinx.coroutines.delay
@@ -472,11 +473,12 @@ class NewDownloadFragment : UnchainedFragment() {
         args.externalUri?.let { link ->
             when (link.scheme) {
                 SCHEME_MAGNET -> {
-                    viewModel.postMessage(getString(R.string.loading_magnet_link))
-                    // set as text input text
+                    // Pre-fill the magnet and let the user pick the service (Real-Debrid /
+                    // TorBox / Both) before submitting. Previously this auto-clicked Download,
+                    // which silently sent every external magnet to the default service
+                    // (Real-Debrid) and bypassed the service selector — and could even fire
+                    // before the connected-services check finished setting the right service.
                     binding.tiLink.setText(link.toString(), TextView.BufferType.EDITABLE)
-                    // simulate button click
-                    binding.bUnrestrict.performClick()
                 }
 
                 SCHEME_CONTENT,
@@ -506,7 +508,7 @@ class NewDownloadFragment : UnchainedFragment() {
 
                                     fileName.endsWith(".torrent", ignoreCase = true) -> {
                                         handled = true
-                                        loadTorrent(binding, link)
+                                        loadTorrentWithServiceChoice(binding, link)
                                     }
                                 }
                             }
@@ -520,7 +522,7 @@ class NewDownloadFragment : UnchainedFragment() {
                             }
 
                             link.path?.endsWith(".torrent", ignoreCase = true) == true -> {
-                                loadTorrent(binding, link)
+                                loadTorrentWithServiceChoice(binding, link)
                             }
 
                             else ->
@@ -580,6 +582,48 @@ class NewDownloadFragment : UnchainedFragment() {
                 else -> {
                     binding.tgService.visibility = View.GONE
                     selectedService = SERVICE_REAL_DEBRID
+                }
+            }
+        }
+    }
+
+    /**
+     * Load a torrent file received from outside the app, asking which service to send it to when
+     * both are connected. Previously external torrent files were sent straight to the default
+     * service, bypassing the selector (and racing the connected-services check).
+     */
+    private fun loadTorrentWithServiceChoice(binding: NewDownloadFragmentBinding, uri: Uri) {
+        lifecycleScope.launch {
+            val rdConnected = activityViewModel.isRealDebridConnected()
+            val torBoxConnected = activityViewModel.isTorBoxConnected()
+            when {
+                rdConnected && torBoxConnected -> {
+                    val labels =
+                        arrayOf(
+                            getString(R.string.real_debrid),
+                            getString(R.string.torbox),
+                            getString(R.string.both_services),
+                        )
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(R.string.choose_download_service)
+                        .setItems(labels) { _, which ->
+                            selectedService =
+                                when (which) {
+                                    1 -> SERVICE_TORBOX
+                                    2 -> SERVICE_BOTH
+                                    else -> SERVICE_REAL_DEBRID
+                                }
+                            loadTorrent(binding, uri)
+                        }
+                        .show()
+                }
+                torBoxConnected -> {
+                    selectedService = SERVICE_TORBOX
+                    loadTorrent(binding, uri)
+                }
+                else -> {
+                    selectedService = SERVICE_REAL_DEBRID
+                    loadTorrent(binding, uri)
                 }
             }
         }

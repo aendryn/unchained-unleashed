@@ -99,9 +99,9 @@ class UserProfileFragment : UnchainedFragment() {
             if (torBoxAuthViewModel.isAuthenticated()) {
                 torBoxAuthViewModel.disconnect()
             } else {
-                // the validated TorBox key entry lives in Settings; opening it here avoids the auth
-                // screen bouncing back when the user is already signed in to another service
-                startActivity(Intent(requireContext(), SettingsActivity::class.java))
+                // open the auth screen focused on the TorBox key entry; it keeps the existing
+                // Real-Debrid session and no longer bounces back to the hub
+                safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())
             }
         }
 

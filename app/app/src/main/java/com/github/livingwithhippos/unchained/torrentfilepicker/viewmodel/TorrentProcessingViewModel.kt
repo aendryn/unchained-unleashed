@@ -68,13 +68,32 @@ constructor(
         setTorrentID(torrentID)
 
         viewModelScope.launch {
-            val torrentData: TorrentItem? = torrentsRepository.getTorrentInfo(torrentID)
+            var torrentData: TorrentItem? = torrentsRepository.getTorrentInfo(torrentID)
+            // A freshly added magnet starts in "magnet_conversion" with no files yet. Poll until
+            // Real-Debrid finishes converting it (files become available / it leaves conversion)
+            // so the file-selection screen isn't shown empty. This matters especially for the
+            // "Both" flow, where adding to TorBox first delays the Real-Debrid add.
+            var attempts = 0
+            while (
+                torrentData != null &&
+                    torrentData.status == MAGNET_CONVERSION_STATUS &&
+                    torrentData.files.isNullOrEmpty() &&
+                    attempts < MAX_CONVERSION_POLLS
+            ) {
+                delay(CONVERSION_POLL_DELAY_MS)
+                torrentData = torrentsRepository.getTorrentInfo(torrentID)
+                attempts++
+            }
             // todo: replace using either
             if (torrentData != null) {
                 setTorrentDetails(torrentData)
                 torrentLiveData.postEvent(TorrentEvent.TorrentInfo(torrentData))
             } else {
+                // The torrent info came back null — e.g. Real-Debrid dropped a magnet it couldn't
+                // resolve and now returns 404. Surface a failure instead of hanging forever on the
+                // loading screen.
                 Timber.e("Retrieved torrent info were null for id $torrentID")
+                torrentLiveData.postEvent(TorrentEvent.DownloadedFileFailure)
             }
         }
     }
@@ -215,6 +234,12 @@ constructor(
     companion object {
         const val KEY_CURRENT_TORRENT = "current_torrent_key"
         const val KEY_CURRENT_TORRENT_ID = "current_torrent_id_key"
+
+        // Real-Debrid status reported while a magnet's metadata is still being resolved.
+        private const val MAGNET_CONVERSION_STATUS = "magnet_conversion"
+        // Poll the torrent info while it is converting, so the file picker isn't shown empty.
+        private const val CONVERSION_POLL_DELAY_MS = 1500L
+        private const val MAX_CONVERSION_POLLS = 20
     }
 }
 

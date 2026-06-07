@@ -669,6 +669,7 @@
     <string name="selecting_picked_files">Selecting %1$d files, please wait…</string>
     <string name="download_manager_system">Default download manager</string>
     <string name="single_torrent_file_available">Only available file automatically selected</string>
+    <string name="torrent_still_processing">Real-Debrid is still processing this torrent. It\'s in your list — open it again to pick files once it\'s ready.</string>
     <string name="update_plugins">Update plugins</string>
     <string name="reload">Reload</string>
     <string name="update">Update</string>
@@ -800,10 +801,12 @@
     <string name="torbox_account_page">TorBox account</string>
     <string name="torbox_details_coming_soon">TorBox torrent details are coming soon</string>
     <string name="torbox_login_message">Or sign in with a TorBox API key</string>
+    <string name="torbox_login_message_standalone">Sign in with a TorBox API key</string>
     <string name="torbox_connect_button">Connect TorBox</string>
     <string name="torbox_signed_in_home">Signed in with TorBox. Your torrents are in the Torrents tab.</string>
     <string name="connect_real_debrid">Connect Real-Debrid</string>
     <string name="both_services">Both</string>
+    <string name="choose_download_service">Send torrent to</string>
     <string name="sending_to_torbox">Sending to TorBox…</string>
     <string name="torbox_added">Added to TorBox</string>
     <string name="torbox_add_failed">Couldn\'t add to TorBox</string>
