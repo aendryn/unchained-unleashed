@@ -2,6 +2,26 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <!-- Accounts: the two debrid services are kept adjacent but in distinct, clearly-titled
+         categories so their like-settings are easy to find without being confused for each other. -->
+
+    <PreferenceCategory
+        android:summary="@string/real_debrid_settings_summary"
+        android:title="@string/real_debrid"
+        app:key="real_debrid_category">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            app:key="use_referral_key"
+            app:summary="@string/referral_summary"
+            app:title="@string/referral" />
+
+        <Preference
+            android:key="user_logout"
+            app:title="@string/logout" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory
         android:summary="@string/torbox_settings_summary"
         android:title="@string/torbox">
@@ -236,10 +256,6 @@
 
     <PreferenceCategory android:title="@string/title_various">
 
-        <Preference
-            android:key="user_logout"
-            app:title="@string/logout" />
-
         <EditTextPreference
             android:defaultValue="10"
             android:inputType="number"
@@ -248,12 +264,6 @@
             android:singleLine="true"
             android:summary="@string/file_size_filter_description"
             android:title="@string/file_size_filter" />
-
-        <SwitchPreference
-            android:defaultValue="false"
-            app:key="use_referral_key"
-            app:summary="@string/referral_summary"
-            app:title="@string/referral" />
 
         <Preference
             app:key="update_regexps"

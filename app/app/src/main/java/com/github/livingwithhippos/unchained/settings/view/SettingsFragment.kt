@@ -18,6 +18,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
+import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthResult
@@ -180,6 +181,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     }
                 }
             }
+        }
+
+        // Hide the Real-Debrid account category for TorBox-only users (mirrors how the TorBox
+        // disconnect entry hides when TorBox isn't connected) so its settings only show when
+        // usable.
+        lifecycleScope.launch {
+            findPreference<PreferenceCategory>("real_debrid_category")?.isVisible =
+                debridManager.isRealDebridAuthenticated()
         }
 
         return super.onCreateView(inflater, container, savedInstanceState)

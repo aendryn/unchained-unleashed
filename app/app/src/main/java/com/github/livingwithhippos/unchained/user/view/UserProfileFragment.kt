@@ -19,6 +19,7 @@ import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuth
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthViewModel
 import com.github.livingwithhippos.unchained.base.UnchainedFragment
 import com.github.livingwithhippos.unchained.data.model.User
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUser
 import com.github.livingwithhippos.unchained.databinding.FragmentUserProfileBinding
 import com.github.livingwithhippos.unchained.settings.view.SettingsActivity
 import com.github.livingwithhippos.unchained.settings.view.SettingsFragment.Companion.KEY_REFERRAL_ASKED
@@ -27,6 +28,8 @@ import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuth
 import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationState
 import com.github.livingwithhippos.unchained.utilities.ACCOUNT_LINK
 import com.github.livingwithhippos.unchained.utilities.REFERRAL_LINK
+import com.github.livingwithhippos.unchained.utilities.TORBOX_ACCOUNT_LINK
+import com.github.livingwithhippos.unchained.utilities.extension.getThemeColor
 import com.github.livingwithhippos.unchained.utilities.extension.openExternalWebPage
 import com.github.livingwithhippos.unchained.utilities.extension.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -71,6 +74,17 @@ class UserProfileFragment : UnchainedFragment() {
                     else getString(R.string.login_type_open)
             }
             updateAccountsUi(realDebridConnected)
+            // mirror RD: pull the TorBox account details (plan, expiry) for its card
+            if (torBoxAuthViewModel.isAuthenticated()) torBoxAuthViewModel.fetchUser()
+        }
+
+        // open the TorBox account page (mirrors Real-Debrid's "Account Page")
+        binding.bTorBoxAccount.setOnClickListener {
+            context?.openExternalWebPage(TORBOX_ACCOUNT_LINK)
+        }
+
+        torBoxAuthViewModel.userLiveData.observe(viewLifecycleOwner) { event ->
+            event.getContentIfNotHandled()?.let { user -> populateTorBoxView(user) }
         }
 
         // connect Real-Debrid (shown only when it isn't connected): open the login screen without
@@ -208,28 +222,73 @@ class UserProfileFragment : UnchainedFragment() {
 
     private fun updateAccountsUi(realDebridConnected: Boolean) {
         val b = _binding ?: return
-        // Real-Debrid profile views are only meaningful when RD is connected
-        val rdVisibility = if (realDebridConnected) View.VISIBLE else View.GONE
-        b.tvName.visibility = rdVisibility
-        b.tvMail.visibility = rdVisibility
-        b.ivProfilePic.visibility = rdVisibility
-        b.cvPremium.visibility = rdVisibility
-        b.tvLoginDescription.visibility = rdVisibility
-        b.divider.visibility = rdVisibility
-        b.tvDescription.visibility = rdVisibility
-        b.bAccount.visibility = rdVisibility
-        b.bConnectRealDebrid.visibility = if (realDebridConnected) View.GONE else View.VISIBLE
 
-        // TorBox row
+        // Real-Debrid card: the profile body only makes sense when connected; otherwise prompt.
+        b.rdConnectedBody.visibility = if (realDebridConnected) View.VISIBLE else View.GONE
+        b.bConnectRealDebrid.visibility = if (realDebridConnected) View.GONE else View.VISIBLE
+        setStatusChip(b.tvRdStatusChip, realDebridConnected)
+
+        // TorBox card
         val torBoxConnected = torBoxAuthViewModel.isAuthenticated()
+        setStatusChip(b.tvTbStatusChip, torBoxConnected)
+        b.tbConnectedBody.visibility = if (torBoxConnected) View.VISIBLE else View.GONE
+        b.bTorBoxAccount.visibility = if (torBoxConnected) View.VISIBLE else View.GONE
         b.tvTorBoxStatus.text =
             if (torBoxConnected)
-                getString(R.string.torbox_connected_summary, torBoxAuthViewModel.getMaskedKey())
+                getString(R.string.torbox_key_format, torBoxAuthViewModel.getMaskedKey())
             else getString(R.string.torbox_not_connected_summary)
         b.bTorBox.text =
             if (torBoxConnected) getString(R.string.torbox_disconnect_title)
             else getString(R.string.torbox_connect_button)
     }
+
+    /** Sets the small header chip's "Connected"/"Not connected" text and tints it accordingly. */
+    private fun setStatusChip(chip: android.widget.TextView, connected: Boolean) {
+        chip.text =
+            getString(
+                if (connected) R.string.account_status_connected
+                else R.string.account_status_not_connected
+            )
+        val attr =
+            if (connected) android.R.attr.colorPrimary
+            else com.google.android.material.R.attr.colorOnSurfaceVariant
+        chip.setTextColor(requireContext().getThemeColor(attr))
+    }
+
+    /** Fills the TorBox card with account details (email, plan, expiry), mirroring the RD card. */
+    private fun populateTorBoxView(user: TorBoxUser?) {
+        val b = _binding ?: return
+        if (user == null) {
+            // keep whatever is shown; just don't surface partial/empty account info
+            b.tvTorBoxEmail.visibility = View.GONE
+            b.tvTorBoxPlan.visibility = View.GONE
+            b.tvTorBoxExpiry.visibility = View.GONE
+            return
+        }
+        b.tvTorBoxEmail.text = user.email
+        b.tvTorBoxEmail.visibility = if (user.email.isNullOrBlank()) View.GONE else View.VISIBLE
+
+        b.tvTorBoxPlan.text = torBoxPlanName(user.plan)
+        b.tvTorBoxPlan.visibility = if (user.plan == null) View.GONE else View.VISIBLE
+
+        val expiry = user.premiumExpiresAt?.take(10)
+        if (expiry.isNullOrBlank()) {
+            b.tvTorBoxExpiry.visibility = View.GONE
+        } else {
+            b.tvTorBoxExpiry.text = getString(R.string.torbox_premium_expires_format, expiry)
+            b.tvTorBoxExpiry.visibility = View.VISIBLE
+        }
+    }
+
+    private fun torBoxPlanName(plan: Int?): String =
+        when (plan) {
+            0 -> getString(R.string.torbox_plan_free)
+            1 -> getString(R.string.torbox_plan_essential)
+            2 -> getString(R.string.torbox_plan_pro)
+            3 -> getString(R.string.torbox_plan_standard)
+            null -> ""
+            else -> getString(R.string.torbox_plan_unknown_format, plan)
+        }
 
     fun populateUserView(user: User?) {
         user?.let {

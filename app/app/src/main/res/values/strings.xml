@@ -775,6 +775,7 @@
     <string name="torbox" translatable="false">TorBox</string>
     <string name="real_debrid" translatable="false">Real-Debrid</string>
     <string name="torbox_settings_summary">Connect a TorBox account to download to it alongside or instead of Real-Debrid</string>
+    <string name="real_debrid_settings_summary">Manage your Real-Debrid session and referral</string>
     <string name="torbox_api_key_title">TorBox API key</string>
     <string name="torbox_api_key_dialog">Paste your permanent TorBox API key. It will be verified before being saved.</string>
     <string name="torbox_get_key_title">Get your API key</string>
@@ -787,6 +788,16 @@
     <string name="torbox_connection_error">Could not connect to TorBox</string>
     <string name="torbox_connected_summary">Connected (%1$s)</string>
     <string name="torbox_not_connected_summary">Not connected</string>
+    <string name="account_status_connected">Connected</string>
+    <string name="account_status_not_connected">Not connected</string>
+    <string name="torbox_key_format">Key %1$s</string>
+    <string name="torbox_plan_free">Free</string>
+    <string name="torbox_plan_essential">Essential</string>
+    <string name="torbox_plan_pro">Pro</string>
+    <string name="torbox_plan_standard">Standard</string>
+    <string name="torbox_plan_unknown_format">Plan %1$d</string>
+    <string name="torbox_premium_expires_format">Premium expires %1$s</string>
+    <string name="torbox_account_page">TorBox account</string>
     <string name="torbox_details_coming_soon">TorBox torrent details are coming soon</string>
     <string name="torbox_login_message">Or sign in with a TorBox API key</string>
     <string name="torbox_connect_button">Connect TorBox</string>

@@ -3,6 +3,7 @@ package com.github.livingwithhippos.unchained.authentication.viewmodel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUser
 import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
 import com.github.livingwithhippos.unchained.data.repository.TorBoxKeyRepository
 import com.github.livingwithhippos.unchained.utilities.Event
@@ -29,7 +30,35 @@ constructor(
 
     val authResult = MutableLiveData<Event<TorBoxAuthResult>>()
 
+    /**
+     * The saved account's details (plan, expiry, email) for the profile card; null while loading.
+     */
+    val userLiveData = MutableLiveData<Event<TorBoxUser?>>()
+
     fun isAuthenticated(): Boolean = keyRepository.isAuthenticated()
+
+    /**
+     * Fetch the connected account's details so the profile can mirror Real-Debrid's premium/expiry
+     * display. No-op (and no event) when no key is saved.
+     */
+    fun fetchUser() {
+        val key = keyRepository.getApiKey() ?: return
+        viewModelScope.launch {
+            val user =
+                try {
+                    withContext(Dispatchers.IO) {
+                        val response = torBoxApiHelper.getUser("Bearer $key")
+                        if (response.isSuccessful && response.body()?.success == true)
+                            response.body()?.data
+                        else null
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "TorBox getUser error")
+                    null
+                }
+            userLiveData.postEvent(user)
+        }
+    }
 
     fun getMaskedKey(): String? =
         keyRepository.getApiKey()?.let { key ->
