@@ -41,3 +41,9 @@
 
 # Keep Protobuf Lite generated classes
 -keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+
+# Navigation Safe Args references model classes only by name (as strings) inside
+# the compiled navigation graphs, so R8 can't see those usages. Keep the
+# Parcelable data models used as nav arguments (UnifiedTorrent, TorrentItem,
+# DownloadItem, ...) so they aren't shrunk/obfuscated away.
+-keep class com.github.livingwithhippos.unchained.data.model.** implements android.os.Parcelable { *; }
