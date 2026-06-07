@@ -121,6 +121,17 @@ data class TorBoxControlTorrentRequest(
     @param:Json(name = "operation") val operation: String,
 )
 
+/**
+ * Response of POST /v1/api/torrents/controltorrent. The endpoint returns HTTP 200 even when the
+ * operation is rejected, so callers must check [success] rather than just the HTTP status.
+ */
+@JsonClass(generateAdapter = true)
+data class TorBoxControlTorrentResponse(
+    @param:Json(name = "success") override val success: Boolean,
+    @param:Json(name = "error") override val error: String?,
+    @param:Json(name = "detail") override val detail: String?,
+) : TorBoxResponse
+
 /** Response of GET /v1/api/torrents/requestdl. [data] is the temporary CDN url (or null). */
 @JsonClass(generateAdapter = true)
 data class TorBoxDownloadLinkResponse(

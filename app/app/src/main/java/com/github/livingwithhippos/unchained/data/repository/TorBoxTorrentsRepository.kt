@@ -203,8 +203,16 @@ constructor(
         withContext(Dispatchers.IO) {
             try {
                 val response = torBoxApiHelper.controlTorrent(bearer(), id, operation)
-                if (response.isSuccessful) EitherResult.Success(Unit)
-                else EitherResult.Failure(NetworkError(response.code(), "TorBox $operation failed"))
+                val body = response.body()
+                // TorBox returns HTTP 200 even when it rejects the operation, signalling the real
+                // outcome only via the `success` envelope field. Checking the status alone made a
+                // failed delete look successful (so the torrent stayed in the list).
+                if (response.isSuccessful && body?.success == true) {
+                    EitherResult.Success(Unit)
+                } else {
+                    Timber.e("TorBox $operation failed: ${describe(response, body)}")
+                    EitherResult.Failure(NetworkError(response.code(), describe(response, body)))
+                }
             } catch (e: Exception) {
                 Timber.e(e, "TorBox controlTorrent ($operation) error")
                 EitherResult.Failure(NetworkError(-1, e.message ?: "Error: $operation"))

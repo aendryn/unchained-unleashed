@@ -179,19 +179,26 @@ constructor(
 
     fun deleteTorrents(torrents: List<UnifiedTorrent>) {
         viewModelScope.launch {
-            torrents.forEach { deleteUnified(it) }
-            if (torrents.size > 1) deletedTorrentLiveData.postEvent(TORRENTS_DELETED)
-            else deletedTorrentLiveData.postEvent(TORRENT_DELETED)
+            val allDeleted = torrents.map { deleteUnified(it) }.all { it }
+            when {
+                // At least one delete failed: report it instead of a false "removed" toast. The
+                // list still refreshes, so anything that did get deleted disappears.
+                !allDeleted -> deletedTorrentLiveData.postEvent(TORRENT_NOT_DELETED)
+                torrents.size > 1 -> deletedTorrentLiveData.postEvent(TORRENTS_DELETED)
+                else -> deletedTorrentLiveData.postEvent(TORRENT_DELETED)
+            }
         }
     }
 
-    private suspend fun deleteUnified(torrent: UnifiedTorrent) {
+    private suspend fun deleteUnified(torrent: UnifiedTorrent): Boolean =
         when (torrent.service) {
-            DebridService.REAL_DEBRID -> torrentsRepository.deleteTorrent(torrent.rawId)
+            DebridService.REAL_DEBRID ->
+                torrentsRepository.deleteTorrent(torrent.rawId) is EitherResult.Success
             DebridService.TORBOX ->
-                torrent.rawId.toLongOrNull()?.let { torBoxTorrentsRepository.deleteTorrent(it) }
+                torrent.rawId.toLongOrNull()?.let {
+                    torBoxTorrentsRepository.deleteTorrent(it) is EitherResult.Success
+                } ?: false
         }
-    }
 
     fun downloadItems(torrents: List<UnifiedTorrent>) {
         torrents

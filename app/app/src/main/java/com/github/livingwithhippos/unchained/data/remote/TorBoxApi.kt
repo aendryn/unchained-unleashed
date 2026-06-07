@@ -1,6 +1,7 @@
 package com.github.livingwithhippos.unchained.data.remote
 
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxCreateTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxDownloadLinkResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrentListResponse
@@ -87,7 +88,7 @@ interface TorBoxApi {
         @Path("api_version") apiVersion: String,
         @Header("Authorization") token: String,
         @Body request: TorBoxControlTorrentRequest,
-    ): Response<Unit>
+    ): Response<TorBoxControlTorrentResponse>
 
     /**
      * Request a temporary CDN download link for a file (or a zip of the whole torrent). Note the

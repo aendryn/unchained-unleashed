@@ -1,5 +1,6 @@
 package com.github.livingwithhippos.unchained.data.remote
 
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxCreateTorrentResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxDownloadLinkResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrentListResponse
@@ -39,7 +40,11 @@ interface TorBoxApiHelper {
         asQueued: Boolean?,
     ): Response<TorBoxCreateTorrentResponse>
 
-    suspend fun controlTorrent(token: String, torrentId: Long, operation: String): Response<Unit>
+    suspend fun controlTorrent(
+        token: String,
+        torrentId: Long,
+        operation: String,
+    ): Response<TorBoxControlTorrentResponse>
 
     suspend fun requestDownloadLink(
         apiKey: String,

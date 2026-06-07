@@ -806,7 +806,10 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
             viewLifecycleOwner,
             EventObserver {
                 when (it) {
-                    TORRENT_NOT_DELETED -> {}
+                    TORRENT_NOT_DELETED -> {
+                        context?.showToast(R.string.torrent_delete_failed)
+                        torrentAdapter.refresh()
+                    }
                     TORRENT_DELETED -> {
                         context?.showToast(R.string.torrent_removed)
                         torrentAdapter.refresh()

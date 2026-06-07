@@ -45,7 +45,13 @@ class UnifiedTorrentPagingSource(
             }
 
             if (services.contains(DebridService.TORBOX)) {
-                merged.addAll(torBoxTorrentsRepository.getTorrentsList(limit = 1000))
+                // Bypass TorBox's server-side cache of /mylist: this source is reloaded on an
+                // explicit refresh (e.g. right after a delete or add), and the cached list would
+                // otherwise still contain a just-deleted torrent, making the delete look like a
+                // no-op. The list is fetched once per refresh, so this stays cheap.
+                merged.addAll(
+                    torBoxTorrentsRepository.getTorrentsList(limit = 1000, bypassCache = true)
+                )
             }
 
             val filtered =
