@@ -49,8 +49,8 @@ android {
         applicationId = "com.github.aendryn.unchainedunleashed"
         minSdk = 27
         targetSdk = 37
-        versionCode = 59
-        versionName = "1.7.0"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
