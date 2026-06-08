@@ -4,7 +4,7 @@
 
 # Unchained Unleashed
 
-> **Unchained Unleashed** is a vibecoded community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top with some additional UI changes, QOL enchancements and security patches. See **What's new in this fork** below.
+> **Unchained Unleashed** is a vibecoded community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top with some additional UI changes, QOL enhancements and security patches. See **What's new in this fork** below.
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)   [![API](https://img.shields.io/badge/API-22%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=22)
 
@@ -29,6 +29,19 @@ Everything from upstream Unchained, plus first-class **TorBox** support:
 - [x] resolved TorBox links handed to the in-app downloader (with per-file progress notifications)
 - [x] foreground torrent notifications cover **both** services
 - [x] redesigned User and Settings screens with distinct per-service cards/sections
+
+### Quality-of-life enhancements :sparkles:
+
+- [x] **faster torrents list** — each service is paged a chunk at a time and fetched concurrently, so results show up quickly and fill in as you scroll instead of waiting for the whole account to load
+- [x] TorBox's list is served from cache on routine opens but always refreshed after you add, delete, pause or resume (or pull-to-refresh), so the list reflects its true state without the wait
+- [x] tapping a file in the TorBox torrent details sends it **straight to the Downloads tab**, matching Real-Debrid behaviour
+- [x] unified **Downloads tab** with in-app playback and automatic re-resolution of expired TorBox links
+- [x] TorBox deletes are reflected in the torrents list **immediately**
+
+### Security :lock:
+
+- [x] the Real-Debrid token and TorBox API key are **excluded from Android cloud backup and device-to-device transfer**
+- [x] remote-service credentials (e.g. Kodi password, service API tokens) are **encrypted at rest** with a non-exportable Android Keystore key
 
 ### Features :memo:
 
