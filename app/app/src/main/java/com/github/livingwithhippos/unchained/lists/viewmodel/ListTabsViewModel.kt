@@ -134,6 +134,15 @@ constructor(
         return savedStateHandle[KEY_SELECTED_TAB] ?: DOWNLOADS_TAB
     }
 
+    /**
+     * Force the next torrents load to bypass TorBox's server-side cache. In-app mutations already
+     * mark the list stale inside [TorBoxTorrentsRepository]; this covers explicit user refreshes
+     * (pull-to-refresh / refresh button) where the user is asking for guaranteed-fresh data.
+     */
+    fun markTorrentsStale() {
+        torBoxTorrentsRepository.markListStale()
+    }
+
     fun setListFilter(query: String?) {
         // Avoid updating the lists if the query hasn't changed. We don't check for cases but we
         // could

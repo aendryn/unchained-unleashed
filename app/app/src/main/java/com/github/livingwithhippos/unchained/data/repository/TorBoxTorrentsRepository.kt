@@ -9,7 +9,9 @@ import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
 import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -25,12 +27,32 @@ import timber.log.Timber
  * - unwraps the TorBox `{success, error, detail, data}` envelope
  * - returns [UnifiedTorrent] so callers don't depend on TorBox-specific types
  */
+@Singleton
 class TorBoxTorrentsRepository
 @Inject
 constructor(
     private val torBoxApiHelper: TorBoxApiHelper,
     private val keyRepository: TorBoxKeyRepository,
 ) {
+
+    /**
+     * Set whenever the torrent list changes (an add/delete/pause/resume through this app) or when the
+     * user explicitly asks for fresh data. The torrents paging source reads-and-clears this via
+     * [consumeListStale] to decide whether it must bypass TorBox's server-side `/mylist` cache for
+     * the next load. Routine loads (first open, tab switches, scrolling) leave it false and so are
+     * served from the cache, which is much faster; anything that could have changed the list flips
+     * it true so the next load shows the true status. Singleton-scoped so every mutation call site
+     * shares the same flag.
+     */
+    private val listStale = AtomicBoolean(false)
+
+    /** Mark the cached torrent list as stale so the next load fetches fresh data. */
+    fun markListStale() {
+        listStale.set(true)
+    }
+
+    /** Returns whether the list is stale and clears the flag in one atomic step. */
+    fun consumeListStale(): Boolean = listStale.getAndSet(false)
 
     private fun bearer(): String {
         val key =
@@ -107,6 +129,7 @@ constructor(
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
                 if (response.isSuccessful && body?.success == true && newId != null) {
+                    markListStale()
                     EitherResult.Success(newId)
                 } else {
                     EitherResult.Failure(NetworkError(response.code(), describe(response, body)))
@@ -141,6 +164,7 @@ constructor(
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
                 if (response.isSuccessful && body?.success == true && newId != null) {
+                    markListStale()
                     EitherResult.Success(newId)
                 } else {
                     EitherResult.Failure(NetworkError(response.code(), describe(response, body)))
@@ -177,6 +201,7 @@ constructor(
                 val resp = response.body()
                 val newId = resp?.data?.torrentId ?: resp?.data?.queuedId
                 if (response.isSuccessful && resp?.success == true && newId != null) {
+                    markListStale()
                     EitherResult.Success(newId)
                 } else {
                     EitherResult.Failure(NetworkError(response.code(), describe(response, resp)))
@@ -208,6 +233,7 @@ constructor(
                 // outcome only via the `success` envelope field. Checking the status alone made a
                 // failed delete look successful (so the torrent stayed in the list).
                 if (response.isSuccessful && body?.success == true) {
+                    markListStale()
                     EitherResult.Success(Unit)
                 } else {
                     Timber.e("TorBox $operation failed: ${describe(response, body)}")

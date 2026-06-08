@@ -779,6 +779,7 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         binding.bRefresh?.setOnClickListener {
             if (!binding.srLayout.isRefreshing) {
                 binding.srLayout.isRefreshing = true
+                viewModel.markTorrentsStale()
                 torrentAdapter.refresh()
             }
         }
@@ -791,7 +792,10 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
             }
         }
 
-        binding.srLayout.setOnRefreshListener { torrentAdapter.refresh() }
+        binding.srLayout.setOnRefreshListener {
+            viewModel.markTorrentsStale()
+            torrentAdapter.refresh()
+        }
 
         val torrentObserver =
             Observer<PagingData<UnifiedTorrent>> {
