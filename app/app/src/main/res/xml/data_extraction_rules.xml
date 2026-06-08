@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
+    <!--
+      credentials.pb (the Real-Debrid OAuth token) is deliberately NOT included, so it is never
+      copied into a cloud backup or device transfer. The TorBox API key lives in its own
+      credentials_secure.xml preferences file, which is excluded below. Non-secret settings and the
+      download/torrent history database are still backed up.
+    -->
     <cloud-backup>
         <include domain="sharedpref" path="."/>
         <include domain="database" path="unchained_db"/>
-        <include domain="file" path="credentials.pb"/>
+        <exclude domain="sharedpref" path="credentials_secure.xml"/>
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="."/>
         <include domain="database" path="unchained_db"/>
-        <include domain="file" path="credentials.pb"/>
+        <exclude domain="sharedpref" path="credentials_secure.xml"/>
     </device-transfer>
 
 </data-extraction-rules>

@@ -20,4 +20,17 @@ object SharedPreferencesModule {
     fun providePreferences(@ApplicationContext appContext: Context): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(appContext)
     }
+
+    /**
+     * Dedicated preferences file for secrets. Kept separate from the default (backed-up) settings
+     * file so the backup rules can exclude it by name ([SECURE_PREFS_FILE].xml).
+     */
+    @Provides
+    @Singleton
+    @SecurePreferences
+    fun provideSecurePreferences(@ApplicationContext appContext: Context): SharedPreferences {
+        return appContext.getSharedPreferences(SECURE_PREFS_FILE, Context.MODE_PRIVATE)
+    }
+
+    const val SECURE_PREFS_FILE = "credentials_secure"
 }

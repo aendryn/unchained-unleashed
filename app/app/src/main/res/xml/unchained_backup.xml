@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Used on Android 11 and below. Only the listed data is backed up: credentials.pb (the Real-Debrid
+  token) is not included, and the TorBox key's credentials_secure.xml is explicitly excluded, so no
+  account credentials leave the device. Non-secret settings and history are still backed up.
+-->
 <full-backup-content>
     <include domain="sharedpref" path="."/>
     <include domain="database" path="unchained_db"/>
+    <exclude domain="sharedpref" path="credentials_secure.xml"/>
 </full-backup-content>

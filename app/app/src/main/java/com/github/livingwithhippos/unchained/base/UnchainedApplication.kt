@@ -51,6 +51,7 @@ class UnchainedApplication : Application() {
             if (pluginRepositoryDataDao.getDefaultRepository().isEmpty())
                 pluginRepositoryDataDao.insert(Repository(DEFAULT_PLUGINS_REPOSITORY_LINK))
             migrateServices()
+            encryptExistingServiceSecrets()
         }
 
         createNotificationChannels()
@@ -90,6 +91,23 @@ class UnchainedApplication : Application() {
         }
     }
 
+    /**
+     * One-time pass that re-saves existing remote services so their credentials get encrypted at
+     * rest (see [com.github.livingwithhippos.unchained.data.local.SecretCipher]). Rows written by
+     * older builds stored the password/API token as plaintext; reading them back decrypts to the
+     * same plaintext (untagged values pass through), and re-saving encrypts them. Idempotent, but
+     * guarded by a flag so it only runs once.
+     */
+    private suspend fun encryptExistingServiceSecrets() {
+        if (preferences.getBoolean(PREF_SERVICE_SECRETS_ENCRYPTED, false)) return
+        try {
+            newServiceRepository.getServices().forEach { newServiceRepository.upsertService(it) }
+            preferences.edit().putBoolean(PREF_SERVICE_SECRETS_ENCRYPTED, true).apply()
+        } catch (e: Exception) {
+            print("Error encrypting existing service secrets: ${e.message}")
+        }
+    }
+
     private fun createNotificationChannels() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
@@ -112,5 +130,6 @@ class UnchainedApplication : Application() {
     companion object {
         const val TORRENT_CHANNEL_ID = "unchained_torrent_channel"
         const val DOWNLOAD_CHANNEL_ID = "unchained_download_channel"
+        private const val PREF_SERVICE_SECRETS_ENCRYPTED = "service_secrets_encrypted"
     }
 }
