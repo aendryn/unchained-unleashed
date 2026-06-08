@@ -438,6 +438,10 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
     private val binding
         get() = _binding!!
 
+    // Held so the list can be refreshed when this tab becomes visible (see onResume), ensuring
+    // newly added TorBox downloads show without a manual pull-to-refresh.
+    private var listAdapter: DownloadListPagingAdapter? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -448,6 +452,7 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         binding.cbSelectAll.text = "0"
 
         val downloadAdapter = DownloadListPagingAdapter(this)
+        listAdapter = downloadAdapter
         binding.rvDownloadList.adapter = downloadAdapter
 
         // download list selection  tracker
@@ -664,8 +669,16 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Fires when this ViewPager page becomes the visible tab. Refresh so downloads added while
+        // we were off-screen (e.g. a TorBox file sent here from the torrent details) show up.
+        listAdapter?.refresh()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        listAdapter = null
         _binding = null
     }
 

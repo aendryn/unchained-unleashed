@@ -49,8 +49,11 @@ android {
         applicationId = "com.github.aendryn.unchainedunleashed"
         minSdk = 27
         targetSdk = 37
-        versionCode = 3
-        versionName = "1.0.2"
+        // The fork ships under its own applicationId, so it installs as a separate app and never
+        // collides with upstream Unchained — versionCode only has to stay monotonic across the
+        // fork's own releases (1.0.0=1, 1.0.1=2, 1.0.2=3) so each is offered as an update.
+        versionCode = 4
+        versionName = "1.0.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

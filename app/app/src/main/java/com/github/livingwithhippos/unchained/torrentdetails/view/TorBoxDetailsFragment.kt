@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -14,14 +15,13 @@ import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxFile
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
 import com.github.livingwithhippos.unchained.databinding.FragmentTorboxDetailsBinding
 import com.github.livingwithhippos.unchained.lists.view.ListState
+import com.github.livingwithhippos.unchained.lists.viewmodel.ListEvent
+import com.github.livingwithhippos.unchained.lists.viewmodel.ListTabsViewModel
 import com.github.livingwithhippos.unchained.torrentdetails.model.TorBoxFileListAdapter
 import com.github.livingwithhippos.unchained.torrentdetails.model.TorBoxFileListener
 import com.github.livingwithhippos.unchained.torrentdetails.viewmodel.TorBoxActionResult
 import com.github.livingwithhippos.unchained.torrentdetails.viewmodel.TorBoxDetailsViewModel
-import com.github.livingwithhippos.unchained.torrentdetails.viewmodel.TorBoxLinkResult
-import com.github.livingwithhippos.unchained.utilities.extension.copyToClipboard
-import com.github.livingwithhippos.unchained.utilities.extension.openExternalWebPage
-import com.github.livingwithhippos.unchained.utilities.extension.openInExternalPlayer
+import com.github.livingwithhippos.unchained.utilities.DOWNLOADS_TAB
 import com.github.livingwithhippos.unchained.utilities.extension.showToast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +32,7 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
 
     private val args: TorBoxDetailsFragmentArgs by navArgs()
     private val viewModel: TorBoxDetailsViewModel by viewModels()
+    private val listTabsViewModel: ListTabsViewModel by activityViewModels()
 
     private var _binding: FragmentTorboxDetailsBinding? = null
     private val binding
@@ -83,15 +84,6 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
             if (!event.hasBeenHandled) populate(event.getContentIfNotHandled(), adapter)
         }
 
-        viewModel.linkLiveData.observe(viewLifecycleOwner) { event ->
-            event.getContentIfNotHandled()?.let { result ->
-                when (result) {
-                    is TorBoxLinkResult.Resolved -> showLinkDialog(result)
-                    TorBoxLinkResult.Error -> context?.showToast(R.string.torbox_link_error)
-                }
-            }
-        }
-
         viewModel.actionLiveData.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { result ->
                 when (result) {
@@ -110,7 +102,10 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
                     }
                     TorBoxActionResult.DownloadSaved -> {
                         context?.showToast(R.string.torbox_download_added)
+                        // Mirror Real-Debrid: go straight back to the lists screen, refresh the
+                        // downloads list and switch to the Downloads tab so the new item is visible.
                         activityViewModel.setListState(ListState.UpdateDownload)
+                        listTabsViewModel.postEventNotice(ListEvent.SetTab(DOWNLOADS_TAB))
                         findNavController().popBackStack()
                     }
                     TorBoxActionResult.Error -> context?.showToast(R.string.torbox_action_error)
@@ -138,40 +133,6 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
         val files = torrent.files.orEmpty()
         binding.tvEmpty.visibility = if (files.isEmpty()) View.VISIBLE else View.GONE
         adapter.submitList(files)
-    }
-
-    private fun showLinkDialog(resolved: TorBoxLinkResult.Resolved) {
-        // The three actions a resolved link supports. "Download" sends it to the Downloads tab
-        // (like
-        // Real-Debrid unrestricted links), where the actual device download is started; the others
-        // just open or copy the link.
-        val actions =
-            arrayOf(
-                getString(R.string.download),
-                getString(R.string.send_to_player),
-                getString(R.string.torbox_open_link),
-                getString(R.string.torbox_copy_link),
-            )
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle(getString(R.string.torbox_link_dialog_title, resolved.name))
-            .setItems(actions) { _, which ->
-                when (which) {
-                    0 -> viewModel.saveDownload(resolved)
-                    1 ->
-                        openInExternalPlayer(
-                            resolved.url,
-                            viewModel.getDefaultPlayer(),
-                            viewModel.getCustomPlayerPreference(),
-                        )
-                    2 -> context?.openExternalWebPage(resolved.url)
-                    3 -> {
-                        copyToClipboard("TorBox", resolved.url)
-                        context?.showToast(R.string.link_copied)
-                    }
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
     override fun onFileLinkClick(file: TorBoxFile) {
