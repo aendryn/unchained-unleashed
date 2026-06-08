@@ -40,6 +40,12 @@ Everything from upstream Unchained, plus first-class **TorBox** support:
 - [x] user info
 - [x] themes
 
+### Screenshots :iphone:
+
+| User | Torrents | Download Details | New Download |
+| ---- | -------- | ---------------- | ------------ |
+| <img width="150" src="extra_assets/graphics/user.jpg?raw=true" alt="User screen with connected Real-Debrid and TorBox accounts"> | <img width="150" src="extra_assets/graphics/downloads.jpg?raw=true" alt="Unified torrents list with a per-row badge showing Real-Debrid or TorBox"> | <img width="150" src="extra_assets/graphics/details.jpg?raw=true" alt="Download details screen with share, stream and send-to-player actions"> | <img width="150" src="extra_assets/graphics/new.jpg?raw=true" alt="New download screen with a Real-Debrid / TorBox / Both service selector"> |
+
 ### Media
 
 Logo and symbols inspired by [minimal logo design set](https://www.rawpixel.com/image/843352/minimal-logo-designs-set) offered by [rawpixel.com](https://www.rawpixel.com)
