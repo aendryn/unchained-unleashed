@@ -103,9 +103,9 @@ class AuthenticationFragment : UnchainedFragment() {
             binding.tiTorBoxKey.hideKeyboard()
         }
 
-        // If TorBox is already connected (e.g. the user is here only to add Real-Debrid), don't
-        // offer the "Connect TorBox" flow again — show the connected state instead, mirroring the
-        // accounts hub.
+        // The screen has a Real-Debrid section and a TorBox section. Which ones are shown depends on
+        // how we got here: connecting one service while the other is already signed in shows only the
+        // relevant section, while a first-time login shows both, clearly separated.
         val torBoxAlreadyConnected = torBoxAuthViewModel.isAuthenticated()
         // Reached from the accounts hub to attach TorBox to an account that is already signed in to
         // Real-Debrid: show only the TorBox key entry and, crucially, don't let the replayed
@@ -116,26 +116,12 @@ class AuthenticationFragment : UnchainedFragment() {
                     CurrentFSMAuthentication.Authenticated
 
         if (torBoxAlreadyConnected) {
-            binding.tvUseTorBox.text =
-                getString(R.string.torbox_connected_summary, torBoxAuthViewModel.getMaskedKey())
-            binding.tfTorBoxKey.visibility = View.GONE
-            binding.bInsertTorBox.visibility = View.GONE
+            // Here only to connect Real-Debrid: hide the TorBox section entirely so its connection
+            // details don't distract from the Real-Debrid sign-in.
+            binding.cvTorBoxAuth.visibility = View.GONE
         } else if (addingTorBoxToAccount) {
-            // no Real-Debrid section above, so drop the "Or " prefix
-            binding.tvUseTorBox.text = getString(R.string.torbox_login_message_standalone)
-            listOf(
-                    binding.tvLoginMessage,
-                    binding.tvAuthenticationLink,
-                    binding.cbLink,
-                    binding.cbSecret,
-                    binding.llUserCode,
-                    binding.cbToken,
-                    binding.tvUsePrivateToken,
-                    binding.tfPrivateCode,
-                    binding.bPastePrivateCode,
-                    binding.bInsertPrivate,
-                )
-                .forEach { it.visibility = View.GONE }
+            // Here only to add TorBox: hide the Real-Debrid section.
+            binding.cvRealDebridAuth.visibility = View.GONE
         }
 
         torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->

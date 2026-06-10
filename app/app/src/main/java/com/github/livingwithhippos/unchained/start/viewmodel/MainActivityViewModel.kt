@@ -291,6 +291,13 @@ constructor(
                         FSMAuthenticationSideEffect.PostRefreshingToken,
                     )
                 }
+                // Real-Debrid was disconnected but a TorBox session remains: re-anchor on TorBox.
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
                 on<FSMAuthenticationEvent.OnAuthenticationError> {
                     transitionTo(
                         FSMAuthenticationState.WaitingUserAction(null),
@@ -319,6 +326,13 @@ constructor(
                         FSMAuthenticationSideEffect.PostAuthenticatedOpen,
                     )
                 }
+                // Real-Debrid was disconnected but a TorBox session remains: re-anchor on TorBox.
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
                 on<FSMAuthenticationEvent.OnLogout> {
                     transitionTo(
                         FSMAuthenticationState.StartNewLogin,
@@ -344,6 +358,13 @@ constructor(
                     transitionTo(
                         FSMAuthenticationState.StartNewLogin,
                         FSMAuthenticationSideEffect.PostNewLogin,
+                    )
+                }
+                // Real-Debrid was disconnected but a TorBox session remains: re-anchor on TorBox.
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
                 on<FSMAuthenticationEvent.OnAuthenticationError> {
@@ -484,6 +505,23 @@ constructor(
             if (user != null) {
                 setCachedUser(user)
                 userLiveData.postEvent(user)
+            }
+        }
+    }
+
+    /**
+     * Disconnect only Real-Debrid, keeping any TorBox session. Mirrors TorBox's disconnect: if the
+     * other service is still connected the user stays signed in (the auth machine re-anchors on
+     * TorBox); otherwise it's a full logout back to the login screen.
+     */
+    fun disconnectRealDebrid() {
+        viewModelScope.launch {
+            protoStore.deleteCredentials()
+            setCachedUser(null)
+            if (debridManager.isTorBoxAuthenticated()) {
+                transitionAuthenticationMachine(FSMAuthenticationEvent.OnTorBoxAuthenticated)
+            } else {
+                transitionAuthenticationMachine(FSMAuthenticationEvent.OnLogout)
             }
         }
     }

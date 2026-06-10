@@ -806,6 +806,8 @@
     <string name="torbox_connect_button">Connect TorBox</string>
     <string name="torbox_signed_in_home">Signed in with TorBox. Your torrents are in the Torrents tab.</string>
     <string name="connect_real_debrid">Connect Real-Debrid</string>
+    <string name="real_debrid_disconnect_title">Disconnect Real-Debrid</string>
+    <string name="real_debrid_disconnected">Real-Debrid disconnected</string>
     <string name="both_services">Both</string>
     <string name="choose_download_service">Send torrent to</string>
     <string name="sending_to_torbox">Sending to TorBox…</string>

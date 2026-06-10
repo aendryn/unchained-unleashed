@@ -6,255 +6,279 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="false"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical">
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp">
 
-        <TextView
-            android:id="@+id/tvLoginMessage"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
-            android:gravity="center"
-            android:text="@string/login_message_placeholder"
-            android:textAlignment="center"
-            app:layout_constraintBottom_toTopOf="@+id/tvAuthenticationLink"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
+        <!-- ========================= Real-Debrid section ========================= -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvRealDebridAuth"
+            style="?attr/materialCardViewElevatedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tvAuthenticationLink"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginEnd="30dp"
-            android:autoLink="web"
-            android:ellipsize="end"
-            android:gravity="center"
-            android:maxLines="1"
-            android:nextFocusRight="@id/tvUsePrivateToken"
-            android:nextFocusDown="@id/tvUsePrivateToken"
-            android:scrollHorizontally="true"
-            android:textAlignment="center"
-            android:visibility="gone"
-            app:layout_constraintBottom_toTopOf="@+id/cbLink"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-
-        <CheckBox
-            android:id="@+id/cbLink"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:clickable="false"
-            android:focusable="false"
-            android:text="@string/waiting_link"
-            app:layout_constraintBottom_toTopOf="@+id/cbSecret"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvAuthenticationLink" />
-
-        <CheckBox
-            android:id="@+id/cbSecret"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="false"
-            android:focusable="false"
-            android:text="@string/waiting_user_auth"
-            app:layout_constraintBottom_toTopOf="@+id/llUserCode"
-            app:layout_constraintStart_toStartOf="@+id/cbLink"
-            app:layout_constraintTop_toBottomOf="@+id/cbLink"
-            />
-
-        <LinearLayout
-            android:id="@+id/llUserCode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:visibility="visible"
-            app:layout_constraintTop_toBottomOf="@+id/cbSecret"
-            app:layout_constraintStart_toStartOf="@+id/cbLink"
-            app:layout_constraintEnd_toEndOf="@+id/cbLink"
-            app:layout_constraintBottom_toTopOf="@+id/cbToken"
-            >
-            <TextView
-                android:id="@+id/tvUserCodeValue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:ellipsize="end"
-                android:maxLines="1"
-                android:textIsSelectable="true"
-                android:scrollHorizontally="true"
-                android:gravity="start"
-                android:text="@string/copy_code"
-                />
-
-            <Button
-                android:id="@+id/bCopyLink"
-                android:enabled="false"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="30dp"
-                android:text="@string/copy"
-                />
-
-        </LinearLayout>
-
-
-        <CheckBox
-            android:id="@+id/cbToken"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:clickable="false"
-            android:focusable="false"
-            android:text="@string/waiting_token"
-            app:layout_constraintTop_toBottomOf="@+id/llUserCode"
-            app:layout_constraintStart_toStartOf="@+id/cbSecret"
-            app:layout_constraintBottom_toTopOf="@+id/tvUsePrivateToken"
-            />
-
-
-        <TextView
-            android:id="@+id/tvUsePrivateToken"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="30dp"
-            android:autoLink="web"
-            android:gravity="center"
-            android:nextFocusUp="@id/tvAuthenticationLink"
-            android:nextFocusDown="@id/tiPrivateCode"
-            android:text="@string/add_private_token_message"
-            app:layout_constraintBottom_toTopOf="@id/tfPrivateCode"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cbToken" />
-
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tfPrivateCode"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:focusable="true"
-            android:hint="@string/private_token"
-            android:importantForAutofill="no"
-            android:minWidth="200dp"
-            android:nextFocusLeft="@id/tvAuthenticationLink"
-            android:nextFocusRight="@id/bPastePrivateCode"
-            android:nextFocusUp="@id/tvUsePrivateToken"
-            android:nextFocusDown="@id/bInsertPrivate"
-            app:endIconMode="clear_text"
-            app:layout_constraintBottom_toTopOf="@id/bInsertPrivate"
-            app:layout_constraintEnd_toStartOf="@id/bPastePrivateCode"
-            app:layout_constraintHorizontal_chainStyle="packed"
-            app:layout_constraintStart_toStartOf="@+id/tvUsePrivateToken"
-            app:layout_constraintTop_toBottomOf="@id/tvUsePrivateToken"
-            app:layout_constraintWidth_max="600dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/tiPrivateCode"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="true"
-                android:singleLine="true" />
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <!-- header: icon + name -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/bPastePrivateCode"
-            android:layout_width="wrap_content"
+                    <ImageView
+                        android:id="@+id/ivRdAuthIcon"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="@string/real_debrid"
+                        android:src="@drawable/ic_service_realdebrid" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/real_debrid"
+                        android:textAppearance="?attr/textAppearanceTitleMedium" />
+                </LinearLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+
+                <TextView
+                    android:id="@+id/tvLoginMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="@string/login_message_placeholder"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/tvAuthenticationLink"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:autoLink="web"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:nextFocusRight="@id/tvUsePrivateToken"
+                    android:nextFocusDown="@id/tvUsePrivateToken"
+                    android:scrollHorizontally="true"
+                    android:textAlignment="center"
+                    android:visibility="gone" />
+
+                <CheckBox
+                    android:id="@+id/cbLink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:checked="false"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="@string/waiting_link" />
+
+                <CheckBox
+                    android:id="@+id/cbSecret"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="@string/waiting_user_auth" />
+
+                <LinearLayout
+                    android:id="@+id/llUserCode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvUserCodeValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="10dp"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:scrollHorizontally="true"
+                        android:text="@string/copy_code"
+                        android:textIsSelectable="true" />
+
+                    <Button
+                        android:id="@+id/bCopyLink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:text="@string/copy" />
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/cbToken"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="@string/waiting_token" />
+
+                <TextView
+                    android:id="@+id/tvUsePrivateToken"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:autoLink="web"
+                    android:gravity="center"
+                    android:nextFocusUp="@id/tvAuthenticationLink"
+                    android:nextFocusDown="@id/tiPrivateCode"
+                    android:text="@string/add_private_token_message" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tfPrivateCode"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:focusable="true"
+                        android:hint="@string/private_token"
+                        android:importantForAutofill="no"
+                        android:nextFocusLeft="@id/tvAuthenticationLink"
+                        android:nextFocusRight="@id/bPastePrivateCode"
+                        android:nextFocusUp="@id/tvUsePrivateToken"
+                        android:nextFocusDown="@id/bInsertPrivate"
+                        app:endIconMode="clear_text">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/tiPrivateCode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:focusable="true"
+                            android:singleLine="true" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/bPastePrivateCode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:nextFocusLeft="@id/tfPrivateCode"
+                        android:nextFocusRight="@id/bInsertPrivate"
+                        android:nextFocusDown="@id/bInsertPrivate"
+                        android:text="@string/paste"
+                        app:icon="@drawable/icon_paste" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/bInsertPrivate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:nextFocusLeft="@id/tfPrivateCode"
+                    android:nextFocusUp="@id/tfPrivateCode"
+                    android:text="@string/save" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ============================ TorBox section ============================ -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvTorBoxAuth"
+            style="?attr/materialCardViewElevatedStyle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:nextFocusLeft="@id/tfPrivateCode"
-            android:nextFocusRight="@id/bInsertPrivate"
-            android:nextFocusDown="@id/bInsertPrivate"
-            android:text="@string/paste"
-            app:icon="@drawable/icon_paste"
-            app:layout_constraintBottom_toBottomOf="@id/tfPrivateCode"
-            app:layout_constraintEnd_toEndOf="@+id/tvUsePrivateToken"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toEndOf="@id/tfPrivateCode"
-            app:layout_constraintTop_toTopOf="@id/tfPrivateCode" />
+            android:layout_marginTop="16dp">
 
-        <Button
-            android:id="@+id/bInsertPrivate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:nextFocusLeft="@id/tfPrivateCode"
-            android:nextFocusUp="@id/tfPrivateCode"
-            android:text="@string/save"
-            app:layout_constraintBottom_toTopOf="@id/tvUseTorBox"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tfPrivateCode" />
-
-        <TextView
-            android:id="@+id/tvUseTorBox"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="30dp"
-            android:gravity="center"
-            android:text="@string/torbox_login_message"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/bInsertPrivate" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tfTorBoxKey"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="30dp"
-            android:focusable="true"
-            android:hint="@string/torbox_api_key_title"
-            android:importantForAutofill="no"
-            app:endIconMode="clear_text"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tvUseTorBox"
-            app:layout_constraintWidth_max="600dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/tiTorBoxKey"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:focusable="true"
-                android:singleLine="true" />
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <!-- header: icon + name -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/bInsertTorBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
-            android:text="@string/torbox_connect_button"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tfTorBoxKey" />
+                    <ImageView
+                        android:id="@+id/ivTbAuthIcon"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:contentDescription="@string/torbox"
+                        android:src="@drawable/ic_service_torbox" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:text="@string/torbox"
+                        android:textAppearance="?attr/textAppearanceTitleMedium" />
+                </LinearLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp" />
+
+                <TextView
+                    android:id="@+id/tvUseTorBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/torbox_login_message_standalone" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tfTorBoxKey"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:focusable="true"
+                    android:hint="@string/torbox_api_key_title"
+                    android:importantForAutofill="no"
+                    app:endIconMode="clear_text">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/tiTorBoxKey"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="true"
+                        android:singleLine="true" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <Button
+                    android:id="@+id/bInsertTorBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/torbox_connect_button" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

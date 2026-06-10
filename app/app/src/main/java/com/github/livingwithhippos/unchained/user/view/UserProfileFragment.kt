@@ -94,6 +94,21 @@ class UserProfileFragment : UnchainedFragment() {
             )
         }
 
+        // disconnect Real-Debrid (mirrors the TorBox disconnect): drop the RD session but keep TorBox
+        binding.bDisconnectRealDebrid.setOnClickListener {
+            lifecycleScope.launch {
+                val torBoxConnected = torBoxAuthViewModel.isAuthenticated()
+                activityViewModel.disconnectRealDebrid()
+                if (torBoxConnected) {
+                    // still signed in to TorBox: stay on the hub, just refresh the RD card
+                    context?.showToast(R.string.real_debrid_disconnected)
+                    updateAccountsUi(realDebridConnected = false)
+                }
+                // with no services left, the auth machine logs out and the fsm observer below
+                // navigates to the login screen
+            }
+        }
+
         // connect or disconnect TorBox
         binding.bTorBox.setOnClickListener {
             if (torBoxAuthViewModel.isAuthenticated()) {

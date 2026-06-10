@@ -139,13 +139,31 @@
                         android:text="@string/rd_settings_link_description"
                         android:textAppearance="?attr/textAppearanceBodyMedium" />
 
-                    <Button
-                        android:id="@+id/bAccount"
-                        style="@style/Widget.Material3.Button"
+                    <!-- account + disconnect actions (mirrors the TorBox card) -->
+                    <LinearLayout
+                        android:id="@+id/realDebridActions"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="@string/account_page" />
+                        android:orientation="horizontal">
+
+                        <Button
+                            android:id="@+id/bAccount"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/account_page" />
+
+                        <Button
+                            android:id="@+id/bDisconnectRealDebrid"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:text="@string/real_debrid_disconnect_title" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <!-- disconnected: connect prompt -->
