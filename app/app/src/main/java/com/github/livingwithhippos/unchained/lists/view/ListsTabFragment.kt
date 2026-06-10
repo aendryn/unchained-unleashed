@@ -695,6 +695,10 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
     private val binding
         get() = _binding!!
 
+    // Held so the list can be refreshed when this tab becomes visible again (see onResume), e.g.
+    // after a torrent was deleted from the TorBox details screen.
+    private var torrentAdapter: TorrentListPagingAdapter? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -703,6 +707,7 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         _binding = FragmentTorrentsListBinding.inflate(inflater, container, false)
 
         val torrentAdapter = TorrentListPagingAdapter(this)
+        this.torrentAdapter = torrentAdapter
         binding.rvTorrentList.adapter = torrentAdapter
 
         // torrent list selection  tracker
@@ -834,10 +839,12 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
                 when (it) {
                     TORRENT_NOT_DELETED -> {
                         context?.showToast(R.string.torrent_delete_failed)
+                        torrentTracker.clearSelection()
                         torrentAdapter.refresh()
                     }
                     TORRENT_DELETED -> {
                         context?.showToast(R.string.torrent_removed)
+                        torrentTracker.clearSelection()
                         torrentAdapter.refresh()
                     }
 
@@ -854,6 +861,7 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
 
                     TORRENTS_DELETED -> {
                         context?.showToast(R.string.torrents_removed)
+                        torrentTracker.clearSelection()
                         torrentAdapter.refresh()
                     }
 
@@ -891,8 +899,18 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Fires when this ViewPager page becomes the visible tab again. A torrent deleted from the
+        // TorBox details screen marks the list stale; refresh so it disappears here too. We only
+        // refresh when something actually changed so routine tab switches keep reusing the cached
+        // list. The refresh's load clears the stale flag and bypasses TorBox's cache.
+        if (viewModel.torrentsListStale()) torrentAdapter?.refresh()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        torrentAdapter = null
         _binding = null
     }
 

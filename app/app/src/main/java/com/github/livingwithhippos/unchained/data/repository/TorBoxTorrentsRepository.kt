@@ -9,6 +9,7 @@ import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
 import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,6 +55,27 @@ constructor(
     /** Returns whether the list is stale and clears the flag in one atomic step. */
     fun consumeListStale(): Boolean = listStale.getAndSet(false)
 
+    /** Returns whether the list is stale without clearing the flag. */
+    fun peekListStale(): Boolean = listStale.get()
+
+    /**
+     * Torrents deleted through the app, mapped to the time they were deleted. TorBox processes
+     * deletes asynchronously: `controltorrent` returns `success: true` immediately, but `/mylist`
+     * (even with `bypass_cache=true`) keeps listing the just-deleted torrent for a short window
+     * afterwards. Without this, the post-delete refresh re-fetches that stale list and the torrent
+     * reappears, so the delete looks like a no-op. We suppress these ids from list results until the
+     * server stops returning them; the [DELETED_TOMBSTONE_MS] cap then lets them expire so a tombstone
+     * can never hide a torrent forever. Re-adding a torrent clears its id (see the add* methods).
+     */
+    private val deletedIds = ConcurrentHashMap<Long, Long>()
+
+    /** Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever. */
+    private fun pruneTombstones() {
+        if (deletedIds.isEmpty()) return
+        val cutoff = System.currentTimeMillis() - DELETED_TOMBSTONE_MS
+        deletedIds.entries.removeAll { it.value < cutoff }
+    }
+
     private fun bearer(): String {
         val key =
             keyRepository.getApiKey() ?: throw IllegalArgumentException("Missing TorBox API key")
@@ -70,7 +92,11 @@ constructor(
                 val response = torBoxApiHelper.getTorrentsList(bearer(), offset, limit, bypassCache)
                 val body = response.body()
                 if (response.isSuccessful && body?.success == true) {
-                    body.data.orEmpty().map { it.toUnified() }
+                    pruneTombstones()
+                    // Hide torrents we just deleted but TorBox's list still returns (see [deletedIds]).
+                    body.data.orEmpty().filterNot { deletedIds.containsKey(it.id) }.map {
+                        it.toUnified()
+                    }
                 } else {
                     Timber.d("TorBox getTorrentsList failed: ${describe(response, body)}")
                     emptyList()
@@ -129,6 +155,8 @@ constructor(
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
                 if (response.isSuccessful && body?.success == true && newId != null) {
+                    // Re-adding clears any stale tombstone so the torrent can show again.
+                    deletedIds.remove(newId)
                     markListStale()
                     EitherResult.Success(newId)
                 } else {
@@ -164,6 +192,8 @@ constructor(
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
                 if (response.isSuccessful && body?.success == true && newId != null) {
+                    // Re-adding clears any stale tombstone so the torrent can show again.
+                    deletedIds.remove(newId)
                     markListStale()
                     EitherResult.Success(newId)
                 } else {
@@ -201,6 +231,8 @@ constructor(
                 val resp = response.body()
                 val newId = resp?.data?.torrentId ?: resp?.data?.queuedId
                 if (response.isSuccessful && resp?.success == true && newId != null) {
+                    // Re-adding clears any stale tombstone so the torrent can show again.
+                    deletedIds.remove(newId)
                     markListStale()
                     EitherResult.Success(newId)
                 } else {
@@ -233,6 +265,9 @@ constructor(
                 // outcome only via the `success` envelope field. Checking the status alone made a
                 // failed delete look successful (so the torrent stayed in the list).
                 if (response.isSuccessful && body?.success == true) {
+                    // TorBox keeps listing a deleted torrent for a moment; tombstone it so the
+                    // post-delete refresh doesn't bring it back (see [deletedIds]).
+                    if (operation == "delete") deletedIds[id] = System.currentTimeMillis()
                     markListStale()
                     EitherResult.Success(Unit)
                 } else {
@@ -277,4 +312,11 @@ constructor(
 
     private fun describe(response: Response<*>, body: TorBoxResponse?): String =
         body?.detail ?: body?.error ?: "HTTP ${response.code()}"
+
+    private companion object {
+        // How long a deleted torrent stays hidden before we trust TorBox's list again. Comfortably
+        // longer than the observed window in which `/mylist` keeps returning a just-deleted torrent,
+        // while still bounding the suppression so a tombstone can never hide a torrent indefinitely.
+        const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
+    }
 }

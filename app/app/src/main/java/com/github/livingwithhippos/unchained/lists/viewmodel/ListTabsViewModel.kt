@@ -143,6 +143,13 @@ constructor(
         torBoxTorrentsRepository.markListStale()
     }
 
+    /**
+     * Whether the torrents list has a pending change (e.g. a torrent deleted from the TorBox details
+     * screen) and should be refreshed when the tab next becomes visible. Non-consuming: the refresh's
+     * paging load clears the flag and decides whether to bypass TorBox's cache.
+     */
+    fun torrentsListStale(): Boolean = torBoxTorrentsRepository.peekListStale()
+
     fun setListFilter(query: String?) {
         // Avoid updating the lists if the query hasn't changed. We don't check for cases but we
         // could
