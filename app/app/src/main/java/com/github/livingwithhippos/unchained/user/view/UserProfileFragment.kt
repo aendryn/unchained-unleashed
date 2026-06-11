@@ -17,6 +17,7 @@ import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthResult
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthViewModel
 import com.github.livingwithhippos.unchained.base.UnchainedFragment
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.User
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUser
 import com.github.livingwithhippos.unchained.databinding.FragmentUserProfileBinding
@@ -86,12 +87,14 @@ class UserProfileFragment : UnchainedFragment() {
             event.getContentIfNotHandled()?.let { user -> populateTorBoxView(user) }
         }
 
-        // connect Real-Debrid (shown only when it isn't connected): open the login screen without
-        // dropping the existing TorBox session
+        // connect Real-Debrid (shown only when it isn't connected): open the login screen focused on
+        // Real-Debrid, without dropping any existing TorBox session
         binding.bConnectRealDebrid.setOnClickListener {
+            activityViewModel.pendingAuthFocus = DebridService.REAL_DEBRID
             activityViewModel.transitionAuthenticationMachine(
                 FSMAuthenticationEvent.OnConnectService
             )
+            safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())
         }
 
         // disconnect Real-Debrid (mirrors the TorBox disconnect): drop the RD session but keep TorBox
@@ -109,15 +112,14 @@ class UserProfileFragment : UnchainedFragment() {
             }
         }
 
-        // connect or disconnect TorBox
-        binding.bTorBox.setOnClickListener {
-            if (torBoxAuthViewModel.isAuthenticated()) {
-                torBoxAuthViewModel.disconnect()
-            } else {
-                // open the auth screen focused on the TorBox key entry; it keeps the existing
-                // Real-Debrid session and no longer bounces back to the hub
-                safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())
-            }
+        // disconnect TorBox (shown only when connected)
+        binding.bTorBox.setOnClickListener { torBoxAuthViewModel.disconnect() }
+
+        // connect TorBox (shown only when disconnected): open the auth screen focused on the TorBox
+        // key entry; it keeps any existing Real-Debrid session and no longer bounces back to the hub
+        binding.bConnectTorBox.setOnClickListener {
+            activityViewModel.pendingAuthFocus = DebridService.TORBOX
+            safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())
         }
 
         torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->
@@ -185,10 +187,18 @@ class UserProfileFragment : UnchainedFragment() {
                     }
 
                     FSMAuthenticationState.StartNewLogin -> {
-                        // the user reset the login, go to the auth fragment
-                        val action =
-                            UserProfileFragmentDirections.actionUserToAuthenticationFragment()
-                        safeNavigate(action)
+                        // Navigation to the sign-in screen is initiated explicitly by the Connect
+                        // buttons; don't auto-navigate here, or returning to the hub mid-login
+                        // (while StartNewLogin is still the current state) would bounce straight
+                        // back to the sign-in screen.
+                    }
+
+                    FSMAuthenticationState.AccountsHub -> {
+                        // No service connected: stay here and make sure both cards show their
+                        // Connect prompt (e.g. after disconnecting the last service).
+                        lifecycleScope.launch {
+                            updateAccountsUi(activityViewModel.isRealDebridConnected())
+                        }
                     }
 
                     FSMAuthenticationState.AuthenticatedOpenToken,
@@ -242,18 +252,17 @@ class UserProfileFragment : UnchainedFragment() {
         b.bConnectRealDebrid.visibility = if (realDebridConnected) View.GONE else View.VISIBLE
         setStatusChip(b.tvRdStatusChip, realDebridConnected)
 
-        // TorBox card
+        // TorBox card: connected shows account details + account/disconnect actions; disconnected
+        // shows a single full-width Connect button (mirrors the Real-Debrid card).
         val torBoxConnected = torBoxAuthViewModel.isAuthenticated()
         setStatusChip(b.tvTbStatusChip, torBoxConnected)
         b.tbConnectedBody.visibility = if (torBoxConnected) View.VISIBLE else View.GONE
-        b.bTorBoxAccount.visibility = if (torBoxConnected) View.VISIBLE else View.GONE
+        b.torBoxActions.visibility = if (torBoxConnected) View.VISIBLE else View.GONE
+        b.bConnectTorBox.visibility = if (torBoxConnected) View.GONE else View.VISIBLE
         b.tvTorBoxStatus.text =
             if (torBoxConnected)
                 getString(R.string.torbox_key_format, torBoxAuthViewModel.getMaskedKey())
             else getString(R.string.torbox_not_connected_summary)
-        b.bTorBox.text =
-            if (torBoxConnected) getString(R.string.torbox_disconnect_title)
-            else getString(R.string.torbox_connect_button)
     }
 
     /** Sets the small header chip's "Connected"/"Not connected" text and tints it accordingly. */

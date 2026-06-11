@@ -19,6 +19,7 @@ import com.github.livingwithhippos.unchained.authentication.viewmodel.SecretResu
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthResult
 import com.github.livingwithhippos.unchained.authentication.viewmodel.TorBoxAuthViewModel
 import com.github.livingwithhippos.unchained.base.UnchainedFragment
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.databinding.FragmentAuthenticationBinding
 import com.github.livingwithhippos.unchained.statemachine.authentication.CurrentFSMAuthentication
 import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationEvent
@@ -103,26 +104,23 @@ class AuthenticationFragment : UnchainedFragment() {
             binding.tiTorBoxKey.hideKeyboard()
         }
 
-        // The screen has a Real-Debrid section and a TorBox section. Which ones are shown depends on
-        // how we got here: connecting one service while the other is already signed in shows only the
-        // relevant section, while a first-time login shows both, clearly separated.
+        // The screen has a Real-Debrid section and a TorBox section. The user reaches it by tapping a
+        // service's "Connect" button on the accounts hub; [pendingAuthFocus] says which one, so we
+        // show only that section. (We also fall back to the connection state for safety.)
+        val focus = activityViewModel.pendingAuthFocus
+        activityViewModel.pendingAuthFocus = null
         val torBoxAlreadyConnected = torBoxAuthViewModel.isAuthenticated()
-        // Reached from the accounts hub to attach TorBox to an account that is already signed in to
-        // Real-Debrid: show only the TorBox key entry and, crucially, don't let the replayed
-        // "authenticated" state bounce us straight back to the user screen.
+        // Attaching TorBox to an account that is already signed in to Real-Debrid: don't let the
+        // replayed "authenticated" state bounce us straight back to the user screen.
         val addingTorBoxToAccount =
             !torBoxAlreadyConnected &&
                 activityViewModel.getCurrentAuthenticationStatus() ==
                     CurrentFSMAuthentication.Authenticated
 
-        if (torBoxAlreadyConnected) {
-            // Here only to connect Real-Debrid: hide the TorBox section entirely so its connection
-            // details don't distract from the Real-Debrid sign-in.
-            binding.cvTorBoxAuth.visibility = View.GONE
-        } else if (addingTorBoxToAccount) {
-            // Here only to add TorBox: hide the Real-Debrid section.
-            binding.cvRealDebridAuth.visibility = View.GONE
-        }
+        val showRealDebrid = focus != DebridService.TORBOX && !addingTorBoxToAccount
+        val showTorBox = focus != DebridService.REAL_DEBRID && !torBoxAlreadyConnected
+        binding.cvRealDebridAuth.visibility = if (showRealDebrid) View.VISIBLE else View.GONE
+        binding.cvTorBoxAuth.visibility = if (showTorBox) View.VISIBLE else View.GONE
 
         torBoxAuthViewModel.authResult.observe(viewLifecycleOwner) { event ->
             event.getContentIfNotHandled()?.let { result ->
@@ -185,6 +183,11 @@ class AuthenticationFragment : UnchainedFragment() {
                         // Universal landing: go to the accounts hub (works without Real-Debrid)
                         val action = AuthenticationFragmentDirections.actionAuthenticationToUser()
                         findNavController().navigate(action)
+                    }
+
+                    FSMAuthenticationState.AccountsHub -> {
+                        // We're on this screen precisely to connect TorBox from the no-service hub
+                        // (the FSM stays on the hub until a key is entered). Don't navigate away.
                     }
 
                     FSMAuthenticationState.StartNewLogin -> {

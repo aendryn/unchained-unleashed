@@ -37,8 +37,7 @@
         android:label="@string/user" >
         <action
             android:id="@+id/action_user_to_authentication_fragment"
-            app:destination="@id/authentication_dest"
-            app:popUpTo="@id/authentication_dest"/>
+            app:destination="@id/authentication_dest" />
         <action
             android:id="@+id/action_user_to_start_fragment"
             app:destination="@id/start_dest"

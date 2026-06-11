@@ -145,6 +145,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:baselineAligned="false"
                         android:orientation="horizontal">
 
                         <Button
@@ -153,6 +154,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:maxLines="1"
                             android:text="@string/account_page" />
 
                         <Button
@@ -162,7 +164,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
-                            android:text="@string/real_debrid_disconnect_title" />
+                            android:maxLines="1"
+                            android:text="@string/disconnect" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -274,6 +277,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
+                    android:baselineAligned="false"
                     android:orientation="horizontal">
 
                     <Button
@@ -282,6 +286,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
+                        android:maxLines="1"
                         android:text="@string/torbox_account_page" />
 
                     <Button
@@ -291,8 +296,19 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="@string/torbox_connect_button" />
+                        android:maxLines="1"
+                        android:text="@string/disconnect" />
                 </LinearLayout>
+
+                <!-- disconnected: connect prompt (mirrors the Real-Debrid card) -->
+                <Button
+                    android:id="@+id/bConnectTorBox"
+                    style="@style/Widget.Material3.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/torbox_connect_button"
+                    android:visibility="gone" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

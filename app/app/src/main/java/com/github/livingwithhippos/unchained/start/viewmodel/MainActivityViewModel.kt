@@ -27,6 +27,7 @@ import com.github.livingwithhippos.unchained.data.local.RemoteService
 import com.github.livingwithhippos.unchained.data.local.RemoteServiceType
 import com.github.livingwithhippos.unchained.data.model.APIError
 import com.github.livingwithhippos.unchained.data.model.ApiConversionError
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.EmptyBodyError
 import com.github.livingwithhippos.unchained.data.model.NetworkError
@@ -120,6 +121,13 @@ constructor(
 
     val jumpTabLiveData = MutableLiveData<Event<String>>()
 
+    /**
+     * Which service the user chose to connect from the accounts hub, so the authentication screen can
+     * show only that service's section. Read and cleared by the auth screen; null means show whatever
+     * the current connection state implies.
+     */
+    var pendingAuthFocus: DebridService? = null
+
     // todo: use a better name to reflect the difference between this and externalLinkLiveData
     val linkLiveData = MutableLiveData<Event<String>?>()
 
@@ -143,14 +151,52 @@ constructor(
                 }
                 on<FSMAuthenticationEvent.OnMissingCredentials> {
                     transitionTo(
-                        FSMAuthenticationState.StartNewLogin,
-                        FSMAuthenticationSideEffect.PostNewLogin,
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
                 on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
                     transitionTo(
                         FSMAuthenticationState.AuthenticatedTorBox,
                         FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
+            }
+
+            // No service connected: the user sits on the accounts hub until they pick one to connect.
+            state<FSMAuthenticationState.AccountsHub> {
+                // tapped "Connect Real-Debrid": start the Real-Debrid sign-in flow
+                on<FSMAuthenticationEvent.OnConnectService> {
+                    transitionTo(
+                        FSMAuthenticationState.StartNewLogin,
+                        FSMAuthenticationSideEffect.PostNewLogin,
+                    )
+                }
+                // pasted a Real-Debrid private token
+                on<FSMAuthenticationEvent.OnPrivateToken> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                // connected TorBox
+                on<FSMAuthenticationEvent.OnTorBoxAuthenticated> {
+                    transitionTo(
+                        FSMAuthenticationState.AuthenticatedTorBox,
+                        FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
+                on<FSMAuthenticationEvent.OnAvailableCredentials> {
+                    transitionTo(
+                        FSMAuthenticationState.CheckCredentials,
+                        FSMAuthenticationSideEffect.CheckingCredentials,
+                    )
+                }
+                // re-checking on restore with still no credentials: stay on the hub
+                on<FSMAuthenticationEvent.OnMissingCredentials> {
+                    transitionTo(
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
             }
@@ -224,6 +270,13 @@ constructor(
                         FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
+                // backed out of the sign-in without connecting: return to the accounts hub
+                on<FSMAuthenticationEvent.OnLogout> {
+                    transitionTo(
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
+                    )
+                }
             }
 
             state<FSMAuthenticationState.WaitingUserConfirmation> {
@@ -259,6 +312,13 @@ constructor(
                         FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
                     )
                 }
+                // backed out of the sign-in without connecting: return to the accounts hub
+                on<FSMAuthenticationEvent.OnLogout> {
+                    transitionTo(
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
+                    )
+                }
             }
 
             state<FSMAuthenticationState.WaitingToken> {
@@ -280,6 +340,13 @@ constructor(
                     transitionTo(
                         FSMAuthenticationState.AuthenticatedTorBox,
                         FSMAuthenticationSideEffect.PostAuthenticatedTorBox,
+                    )
+                }
+                // backed out of the sign-in without connecting: return to the accounts hub
+                on<FSMAuthenticationEvent.OnLogout> {
+                    transitionTo(
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
             }
@@ -306,8 +373,8 @@ constructor(
                 }
                 on<FSMAuthenticationEvent.OnLogout> {
                     transitionTo(
-                        FSMAuthenticationState.StartNewLogin,
-                        FSMAuthenticationSideEffect.PostNewLogin,
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
                 // re-checking credentials after the user enters a new RD private token
@@ -335,8 +402,8 @@ constructor(
                 }
                 on<FSMAuthenticationEvent.OnLogout> {
                     transitionTo(
-                        FSMAuthenticationState.StartNewLogin,
-                        FSMAuthenticationSideEffect.PostNewLogin,
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
                 on<FSMAuthenticationEvent.OnAuthenticationError> {
@@ -356,8 +423,8 @@ constructor(
             state<FSMAuthenticationState.AuthenticatedPrivateToken> {
                 on<FSMAuthenticationEvent.OnLogout> {
                     transitionTo(
-                        FSMAuthenticationState.StartNewLogin,
-                        FSMAuthenticationSideEffect.PostNewLogin,
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
                 // Real-Debrid was disconnected but a TorBox session remains: re-anchor on TorBox.
@@ -384,8 +451,8 @@ constructor(
             state<FSMAuthenticationState.AuthenticatedTorBox> {
                 on<FSMAuthenticationEvent.OnLogout> {
                     transitionTo(
-                        FSMAuthenticationState.StartNewLogin,
-                        FSMAuthenticationSideEffect.PostNewLogin,
+                        FSMAuthenticationState.AccountsHub,
+                        FSMAuthenticationSideEffect.PostAccountsHub,
                     )
                 }
                 // a RealDebrid login can still be started while signed in to TorBox
@@ -428,6 +495,9 @@ constructor(
                         fsmAuthenticationState.postValue(
                             Event(FSMAuthenticationState.StartNewLogin)
                         )
+                    }
+                    FSMAuthenticationSideEffect.PostAccountsHub -> {
+                        fsmAuthenticationState.postValue(Event(FSMAuthenticationState.AccountsHub))
                     }
                     FSMAuthenticationSideEffect.PostAuthenticatedOpen -> {
                         fsmAuthenticationState.postValue(

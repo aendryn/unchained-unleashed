@@ -11,6 +11,13 @@ sealed class FSMAuthenticationState {
 
     data object StartNewLogin : FSMAuthenticationState()
 
+    /**
+     * No service is connected, but the user is shown the accounts hub (the User screen with a
+     * "Connect" button per service) instead of being dropped straight into the sign-in flow. The
+     * flow only starts when the user taps a Connect button.
+     */
+    data object AccountsHub : FSMAuthenticationState()
+
     data object WaitingUserConfirmation : FSMAuthenticationState()
 
     data object WaitingToken : FSMAuthenticationState()
@@ -73,6 +80,8 @@ sealed class FSMAuthenticationSideEffect {
     data object PostActionNeeded : FSMAuthenticationSideEffect()
 
     data object PostNewLogin : FSMAuthenticationSideEffect()
+
+    data object PostAccountsHub : FSMAuthenticationSideEffect()
 
     data object ResetAuthentication : FSMAuthenticationSideEffect()
 

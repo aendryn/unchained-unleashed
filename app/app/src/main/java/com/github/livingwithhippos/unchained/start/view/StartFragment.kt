@@ -41,6 +41,13 @@ class StartFragment : UnchainedFragment() {
                             StartFragmentDirections.actionStartFragmentToAuthenticationFragment()
                         safeNavigate(action)
                     }
+                    FSMAuthenticationState.AccountsHub -> {
+                        // No service connected: land on the accounts hub (User screen) with its
+                        // Connect buttons instead of dropping into the sign-in flow.
+                        val action =
+                            StartFragmentDirections.actionStartFragmentToUserProfileFragment()
+                        safeNavigate(action)
+                    }
                     FSMAuthenticationState.AuthenticatedOpenToken -> {
                         val action =
                             StartFragmentDirections.actionStartFragmentToUserProfileFragment()

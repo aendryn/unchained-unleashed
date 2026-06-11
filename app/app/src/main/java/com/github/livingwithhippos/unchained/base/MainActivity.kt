@@ -48,6 +48,7 @@ import com.github.livingwithhippos.unchained.settings.view.SettingsFragment.Comp
 import com.github.livingwithhippos.unchained.start.viewmodel.MainActivityMessage
 import com.github.livingwithhippos.unchained.start.viewmodel.MainActivityViewModel
 import com.github.livingwithhippos.unchained.statemachine.authentication.CurrentFSMAuthentication
+import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationEvent
 import com.github.livingwithhippos.unchained.statemachine.authentication.FSMAuthenticationState
 import com.github.livingwithhippos.unchained.utilities.APP_LINK
 import com.github.livingwithhippos.unchained.utilities.EitherResult
@@ -255,6 +256,14 @@ class MainActivity : AppCompatActivity() {
 
                 FSMAuthenticationState.StartNewLogin -> {
                     // this state should be managed by the fragments directly
+                }
+
+                FSMAuthenticationState.AccountsHub -> {
+                    // No service connected: the user is on the accounts hub. Keep the content tabs
+                    // locked until they connect something.
+                    lifecycleScope.launch {
+                        disableBottomNavItems(R.id.navigation_lists, R.id.navigation_search)
+                    }
                 }
 
                 FSMAuthenticationState.AuthenticatedOpenToken -> {
@@ -916,9 +925,22 @@ class MainActivity : AppCompatActivity() {
         val previousDestination = navController.previousBackStackEntry
 
         when (currentDestination?.id) {
-            // check if we're pressing back from the user or authentication fragment
-            R.id.user_dest,
+            // back from the login screen: cancel any in-progress login and return to the hub
+            // (the auth screen is pushed on top of the user hub, so there's always something to
+            // pop back to). Without this, the user_dest branch below would treat auth -> user as an
+            // "exit" and show the press-again-to-exit toast instead of going back.
             R.id.authentication_dest -> {
+                if (
+                    viewModel.getCurrentAuthenticationStatus() !=
+                        CurrentFSMAuthentication.Authenticated
+                ) {
+                    viewModel.transitionAuthenticationMachine(FSMAuthenticationEvent.OnLogout)
+                }
+                if (!navController.popBackStack()) finish()
+            }
+
+            // check if we're pressing back from the user fragment
+            R.id.user_dest -> {
                 // check the destination for the back action
                 if (
                     previousDestination == null ||
