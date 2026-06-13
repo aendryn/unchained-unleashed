@@ -4,7 +4,7 @@
 
 # Unchained Unleashed
 
-> **Unchained Unleashed** is a vibecoded community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top with some additional UI changes, QOL enhancements and security patches. See **What's new in this fork** below.
+> **Unchained Unleashed** is a community fork of [**Unchained for Android**](https://github.com/LivingWithHippos/unchained-android) by [LivingWithHippos](https://github.com/LivingWithHippos) that adds **[TorBox](https://torbox.app/)** support alongside Real-Debrid. All credit for the original application goes to the upstream project and its contributors; this fork only layers TorBox on top with some additional UI changes, QOL enhancements and security patches. See **What's new in this fork** below.
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)   [![API](https://img.shields.io/badge/API-22%2B-brightgreen.svg?style=flat)](https://android-arsenal.com/api?level=22)
 
@@ -64,3 +64,5 @@ Everything from upstream Unchained, plus first-class **TorBox** support:
 Logo and symbols inspired by [minimal logo design set](https://www.rawpixel.com/image/843352/minimal-logo-designs-set) offered by [rawpixel.com](https://www.rawpixel.com)
 Icons by [Fluent UI](https://www.svgrepo.com/collection/fluent-ui-icons-outlined/) offered by [SVG Repo](https://www.svgrepo.com/)
 Backgrounds courtesy of [haikei](https://haikei.app/) and [SVG Backgrounds](https://www.svgbackgrounds.com/)
+
+<sub>Developed with AI assistance. All generated content was reviewed and approved before inclusion</sub>
