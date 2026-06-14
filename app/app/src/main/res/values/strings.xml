@@ -155,6 +155,8 @@
                     Various projects, resources, and people have helped in the creation of this app. A thank goes to:
                     <br>
                     <ul>
+                    <li> LivingWithHippos and the Unchained for Android contributors, whose app this is forked from </li>
+                    <li> TorBox for their debrid service </li>
                     <li> Real Debrid people for all their work </li>
                     <li> @oathzed for testing every nooks and cranny of the app</li>
                     <li> rawpixel.com for inspiring the logo and symbols with the <a href="https://www.rawpixel.com/image/843352/minimal-logo-designs-set" target="_blank" rel="noopener noreferrer">minimal logo design set</a> </li>
@@ -176,16 +178,16 @@
                           to translate the app into other languages, or make derivative
                           versions. The app itself, and all the trade marks, copyright,
                           database rights and other intellectual property rights related
-                          to it, still belong to LivingWithHippos.
+                          to it, still belong to their respective owners.
                         </p> <p>
-                          LivingWithHippos is committed to ensuring that the app is
+                          The developer is committed to ensuring that the app is
                           as useful and efficient as possible. For that reason, we
                           reserve the right to make changes to the app or to charge for
                           its services, at any time and for any reason. We will never
                           charge you for the app or its services without making it very
                           clear to you exactly what you’re paying for.
                         </p> <p>
-                          The Unchained app stores and processes personal data that
+                          The Unchained Unleashed app stores and processes personal data that
                           you have provided to us, in order to provide my
                           Service. It’s your responsibility to keep your phone and
                           access to the app secure. We therefore recommend that you do
@@ -194,14 +196,12 @@
                           official operating system of your device. It could make your
                           phone vulnerable to malware/viruses/malicious programs,
                           compromise your phone’s security features and it could mean
-                          that the Unchained app won’t work properly or at all.
+                          that the Unchained Unleashed app won’t work properly or at all.
                         </p> <!----> <p>
-                          You should be aware that there are certain things that
-                          LivingWithHippos will not take responsibility for. Certain
+                          You should be aware that there are certain things that the developer will not take responsibility for. Certain
                           functions of the app will require the app to have an active
                           internet connection. The connection can be Wi-Fi, or provided
-                          by your mobile network provider, but LivingWithHippos
-                          cannot take responsibility for the app not working at full
+                          by your mobile network provider, but the developer cannot take responsibility for the app not working at full
                           functionality if you don’t have access to Wi-Fi, and you don’t
                           have any of your data allowance left.
                         </p> <p></p> <p>
@@ -218,18 +218,17 @@
                           using the app, please be aware that we assume that you have
                           received permission from the bill payer for using the app.
                         </p> <p>
-                          Along the same lines, LivingWithHippos cannot always take
+                          Along the same lines, the developer cannot always take
                           responsibility for the way you use the app i.e. You need to
                           make sure that your device stays charged – if it runs out of
-                          battery and you can’t turn it on to avail the Service,
-                          LivingWithHippos cannot accept responsibility.
+                          battery and you can’t turn it on to avail the Service, the developer cannot accept responsibility.
                         </p> <p>
-                          With respect to LivingWithHippos’s responsibility for your
+                          With respect to the developer’s responsibility for your
                           use of the app, when you’re using the app, it’s important to
                           bear in mind that although we endeavour to ensure that it is
                           updated and correct at all times, we do rely on third parties
                           to provide information to us so that we can make it available
-                          to you. LivingWithHippos accepts no liability for any
+                          to you. The developer accepts no liability for any
                           loss, direct or indirect, you experience as a result of
                           relying wholly on this functionality of the app.
                         </p> <p>
@@ -238,7 +237,7 @@
                           system(and for any additional systems we
                           decide to extend the availability of the app to) may change,
                           and you’ll need to download the updates if you want to keep
-                          using the app. LivingWithHippos does not promise that it
+                          using the app. The developer does not promise that it
                           will always update the app so that it is relevant to you
                           and/or works with the Android version that you have
                           installed on your device. However, you promise to always
@@ -259,8 +258,7 @@
                           These terms and conditions are effective as of 2020-09-23
                         </p> <p><strong>Contact Us</strong></p> <p>
                           If you have any questions or suggestions about my
-                          Terms and Conditions, do not hesitate to contact me
-                          at livingwithhippos@gmail.com.
+                          Terms and Conditions, do not hesitate to contact me by opening an issue at https://github.com/aendryn/unchained-unleashed/issues.
                         </p> <p>
                           This Terms and Conditions page was generated by
                           <a href="https://app-privacy-policy-generator.firebaseapp.com/" target="_blank" rel="noopener noreferrer">App Privacy Policy Generator</a></p>
@@ -271,9 +269,8 @@
         <![CDATA[
         <body>
     <strong>Privacy Policy</strong> <p>
-                  LivingWithHippos built the Unchained app as
-                  an Open Source app. This SERVICE is provided by
-                  LivingWithHippos at no cost and is intended for use as
+                  The developer built the Unchained Unleashed app as
+                  an Open Source app. This SERVICE is provided by the developer at no cost and is intended for use as
                   is.
                 </p> <p>
                   This page is used to inform visitors regarding my
@@ -287,8 +284,7 @@
                   anyone except as described in this Privacy Policy.
                 </p> <p>
                   The terms used in this Privacy Policy have the same meanings
-                  as in our Terms and Conditions, which is accessible at
-                  Unchained unless otherwise defined in this Privacy Policy.
+                  as in our Terms and Conditions, which is accessible at Unchained Unleashed unless otherwise defined in this Privacy Policy.
                 </p> <p><strong>Information Collection and Use</strong></p> <p>
                   For a better experience, while using our Service, I
                   may require you to provide us with certain personally
@@ -354,7 +350,7 @@
                   this page.
                 </p> <p>This policy is effective as of 2020-09-23</p> <p><strong>Contact Us</strong></p> <p>
                   If you have any questions or suggestions about my
-                  Privacy Policy, do not hesitate to contact me at livingwithhippos@gmail.com.
+                  Privacy Policy, do not hesitate to contact me by opening an issue at https://github.com/aendryn/unchained-unleashed/issues.
                 </p> <p>
                   This privacy policy page was created at
                   <a href="https://privacypolicytemplate.net" target="_blank" rel="noopener noreferrer">privacypolicytemplate.net</a>
@@ -369,8 +365,8 @@
     <string name="please_login">Please log in your account</string>
     <string name="loading_magnet_link">Loading magnet link…</string>
     <string name="loading_torrent_file">Loading torrent file…</string>
-    <string name="unchained_torrent_download">Unchained Torrent Download</string>
-    <string name="unchained_plugin_download">Unchained Plugin Download</string>
+    <string name="unchained_torrent_download">Unchained Unleashed Torrent Download</string>
+    <string name="unchained_plugin_download">Unchained Unleashed Plugin Download</string>
     <string name="temporary_torrent_download">Temporary download of a torrent file</string>
     <string name="temporary_plugin_download">Temporary download of a plugin file</string>
     <string name="error_loading_dialog">Error loading the dialog, please reopen it.</string>
@@ -521,7 +517,7 @@
     <string name="download_not_started">Error during download initialization</string>
     <string name="download_not_started_format">Error initializing download of %s</string>
     <string name="multiple_downloads_enqueued_format">%1$d out of %2$d downloads enqueued correctly</string>
-    <string name="needs_download_permission">Unchained needs the storage permission to download files directly</string>
+    <string name="needs_download_permission">Unchained Unleashed needs the storage permission to download files directly</string>
     <string name="kodi" translatable="false">Kodi</string>
     <string name="test_connection">Test the connection</string>
     <string name="kodi_credentials_incomplete">At least IP and port are required for Kodi</string>
@@ -548,7 +544,7 @@
     <string name="loading_container_file">Loading container file…</string>
     <string name="no_network_connection">No network connection</string>
     <string name="download_all">Download All</string>
-    <string name="sending_crash_report">Unchained just crashed.\nSending crash report…</string>
+    <string name="sending_crash_report">Unchained Unleashed just crashed.\nSending crash report…</string>
     <string name="upload">Upload</string>
     <string name="unsupported_file">File not supported</string>
     <string name="hoster">Hoster</string>

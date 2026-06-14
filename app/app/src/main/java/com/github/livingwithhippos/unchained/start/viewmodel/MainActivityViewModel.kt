@@ -1113,63 +1113,9 @@ constructor(
         cacheDir.listFiles()?.forEach { if (it.name != "image_cache") it.deleteRecursively() }
     }
 
-    private fun checkUpdateVersion(
-        localVersion: Int,
-        remoteVersion: Int?,
-        lastVersionChecked: Int,
-        signature: String,
-    ) {
-        if (remoteVersion != null) {
-            if (remoteVersion > localVersion && remoteVersion > lastVersionChecked) {
-                messageLiveData.postValue(Event(MainActivityMessage.UpdateFound(signature)))
-            }
-            preferences.edit { putInt(KEY_LAST_UPDATE_VERSION_CHECKED, remoteVersion) }
-        }
-    }
-
     fun checkUpdates(versionCode: Int, signatures: List<String>) {
-        viewModelScope.launch {
-            // ignore errors getting updates?
-            // todo: Add a toast if a button to check updates is added
-            val updates = updateRepository.getUpdates(SIGNATURE.URL)
-            if (updates != null) {
-                val lastVersionChecked = preferences.getInt(KEY_LAST_UPDATE_VERSION_CHECKED, -1)
-                for (signature in signatures) {
-                    when (val upperSignature = signature.uppercase()) {
-                        SIGNATURE.F_DROID -> {
-                            checkUpdateVersion(
-                                versionCode,
-                                updates.fDroid?.versionCode,
-                                lastVersionChecked,
-                                upperSignature,
-                            )
-                            break
-                        }
-                        SIGNATURE.GITHUB -> {
-                            checkUpdateVersion(
-                                versionCode,
-                                updates.github?.versionCode,
-                                lastVersionChecked,
-                                upperSignature,
-                            )
-                            break
-                        }
-                        SIGNATURE.PLAY_STORE -> {
-                            checkUpdateVersion(
-                                versionCode,
-                                updates.playStore?.versionCode,
-                                lastVersionChecked,
-                                upperSignature,
-                            )
-                            break
-                        }
-                        else -> {
-                            Timber.w("Unknown apk signature, may be debugging: $upperSignature")
-                        }
-                    }
-                }
-            }
-        }
+        // Update checks are disabled. Unchained Unleashed ships via GitHub releases and does not
+        // poll a remote version list; users update by installing newer release APKs.
     }
 
     fun setDownloadFolder(uri: Uri) {

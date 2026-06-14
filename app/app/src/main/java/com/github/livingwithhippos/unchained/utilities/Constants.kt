@@ -38,7 +38,7 @@ const val CONTAINER_PATTERN: String = "https?://[^\\s]{7,}\\.(rsdf|ccf3|ccf|dlc)
 const val CONTAINER_EXTENSION_PATTERN: String = "[^\\s]+\\.(rsdf|ccf3|ccf|dlc)$"
 const val IP_PATTERN: String = "^(((?!25?[6-9])[12]\\d|[1-9])?\\d\\.?\\b){4}"
 
-const val FEEDBACK_URL = "https://github.com/LivingWithHippos/unchained-android"
+const val FEEDBACK_URL = "https://github.com/aendryn/unchained-unleashed/issues"
 const val GPLV3_URL = "https://www.gnu.org/licenses/gpl-3.0.en.html"
 
 const val SCHEME_MAGNET = "magnet"
@@ -116,10 +116,11 @@ object SIGNATURE {
 }
 
 object APP_LINK {
-    const val PLAY_STORE =
-        "https://play.google.com/store/apps/details?id=com.github.livingwithhippos.unchained"
-    const val F_DROID = "https://f-droid.org/packages/com.github.livingwithhippos.unchained/"
-    const val GITHUB = "https://github.com/LivingWithHippos/unchained-android/releases"
+    // Unchained Unleashed is distributed via GitHub releases only (not Play Store or F-Droid),
+    // so every store link points at the releases page.
+    const val PLAY_STORE = "https://github.com/aendryn/unchained-unleashed/releases"
+    const val F_DROID = "https://github.com/aendryn/unchained-unleashed/releases"
+    const val GITHUB = "https://github.com/aendryn/unchained-unleashed/releases"
 }
 
 object PreferenceKeys {
