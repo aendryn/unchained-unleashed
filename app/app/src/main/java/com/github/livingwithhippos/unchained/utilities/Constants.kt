@@ -116,10 +116,11 @@ object SIGNATURE {
 }
 
 object APP_LINK {
-    // Unchained Unleashed is distributed via GitHub releases only (not Play Store or F-Droid),
-    // so every store link points at the releases page.
-    const val PLAY_STORE = "https://github.com/aendryn/unchained-unleashed/releases"
-    const val F_DROID = "https://github.com/aendryn/unchained-unleashed/releases"
+    // Unchained Unleashed is currently distributed via GitHub releases only.
+    // No Play Store is planned; re-enable F_DROID with the real listing URL when an
+    // F-Droid release actually ships.
+    // const val PLAY_STORE = ""
+    // const val F_DROID = ""
     const val GITHUB = "https://github.com/aendryn/unchained-unleashed/releases"
 }
 

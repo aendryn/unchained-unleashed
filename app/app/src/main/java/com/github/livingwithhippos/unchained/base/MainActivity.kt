@@ -446,20 +446,20 @@ class MainActivity : AppCompatActivity() {
 
                 is MainActivityMessage.UpdateFound -> {
                     when (content.signature) {
-                        SIGNATURE.F_DROID -> {
-                            showUpdateDialog(
-                                getString(R.string.fdroid_update_description),
-                                APP_LINK.F_DROID,
-                            )
-                        }
-
-                        SIGNATURE.PLAY_STORE -> {
-                            showUpdateDialog(
-                                getString(R.string.playstore_update_description),
-                                APP_LINK.PLAY_STORE,
-                            )
-                        }
-
+                        // Play Store / F-Droid update prompts are disabled: the fork ships via
+                        // GitHub releases only. Restore these when an F-Droid release exists.
+                        // SIGNATURE.F_DROID -> {
+                        //     showUpdateDialog(
+                        //         getString(R.string.fdroid_update_description),
+                        //         APP_LINK.F_DROID,
+                        //     )
+                        // }
+                        // SIGNATURE.PLAY_STORE -> {
+                        //     showUpdateDialog(
+                        //         getString(R.string.playstore_update_description),
+                        //         APP_LINK.PLAY_STORE,
+                        //     )
+                        // }
                         SIGNATURE.GITHUB -> {
                             showUpdateDialog(
                                 getString(R.string.github_update_description),
