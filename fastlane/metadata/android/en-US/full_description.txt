@@ -5,12 +5,10 @@ It is a community fork of Unchained for Android by LivingWithHippos that adds To
 Why use Unchained Unleashed? 📝
 
 - sign in with Real-Debrid and/or TorBox — use either one alone, or both together
-- download from all the available hosters (Real-Debrid)
+- download from all the available hosters
 - add torrent files and magnet links, and pick which service handles each one
 - a unified torrents list across both services, with per-file link resolution
 - foreground notifications that track torrents on both services
-- unlock all the features with the private API key
-- keep your subscription under control
 - free and without ads
 
 Note: this app requires a paid Real-Debrid and/or TorBox account to work
