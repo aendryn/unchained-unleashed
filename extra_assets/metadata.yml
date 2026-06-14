@@ -20,8 +20,8 @@ RepoType: git
 Repo: https://github.com/aendryn/unchained-unleashed
 
 Builds:
-  - versionName: 1.0.6
-    versionCode: 7
+  - versionName: 1.0.7
+    versionCode: 8
     commit: main
     subdir: app/app
     sudo:
@@ -33,5 +33,5 @@ Builds:
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags
-CurrentVersion: 1.0.6
-CurrentVersionCode: 7
+CurrentVersion: 1.0.7
+CurrentVersionCode: 8

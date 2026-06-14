@@ -52,8 +52,8 @@ android {
         // The fork ships under its own applicationId, so it installs as a separate app and never
         // collides with upstream Unchained — versionCode only has to stay monotonic across the
         // fork's own releases (1.0.0=1, 1.0.1=2, 1.0.2=3) so each is offered as an update.
-        versionCode = 7
-        versionName = "1.0.6"
+        versionCode = 8
+        versionName = "1.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

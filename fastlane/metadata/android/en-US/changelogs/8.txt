@@ -1,0 +1,4 @@
+- Refreshed app icon and branding
+- Release builds now ship with no analytics or tracking
+- In-app feedback and update links now point to the project's GitHub
+- Torrents tab icon now follows your theme
