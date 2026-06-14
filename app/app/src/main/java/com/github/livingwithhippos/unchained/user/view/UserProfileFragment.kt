@@ -87,7 +87,8 @@ class UserProfileFragment : UnchainedFragment() {
             event.getContentIfNotHandled()?.let { user -> populateTorBoxView(user) }
         }
 
-        // connect Real-Debrid (shown only when it isn't connected): open the login screen focused on
+        // connect Real-Debrid (shown only when it isn't connected): open the login screen focused
+        // on
         // Real-Debrid, without dropping any existing TorBox session
         binding.bConnectRealDebrid.setOnClickListener {
             activityViewModel.pendingAuthFocus = DebridService.REAL_DEBRID
@@ -97,7 +98,8 @@ class UserProfileFragment : UnchainedFragment() {
             safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())
         }
 
-        // disconnect Real-Debrid (mirrors the TorBox disconnect): drop the RD session but keep TorBox
+        // disconnect Real-Debrid (mirrors the TorBox disconnect): drop the RD session but keep
+        // TorBox
         binding.bDisconnectRealDebrid.setOnClickListener {
             lifecycleScope.launch {
                 val torBoxConnected = torBoxAuthViewModel.isAuthenticated()
@@ -116,7 +118,8 @@ class UserProfileFragment : UnchainedFragment() {
         binding.bTorBox.setOnClickListener { torBoxAuthViewModel.disconnect() }
 
         // connect TorBox (shown only when disconnected): open the auth screen focused on the TorBox
-        // key entry; it keeps any existing Real-Debrid session and no longer bounces back to the hub
+        // key entry; it keeps any existing Real-Debrid session and no longer bounces back to the
+        // hub
         binding.bConnectTorBox.setOnClickListener {
             activityViewModel.pendingAuthFocus = DebridService.TORBOX
             safeNavigate(UserProfileFragmentDirections.actionUserToAuthenticationFragment())

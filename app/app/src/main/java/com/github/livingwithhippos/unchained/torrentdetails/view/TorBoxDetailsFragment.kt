@@ -103,7 +103,8 @@ class TorBoxDetailsFragment : UnchainedFragment(), TorBoxFileListener {
                     TorBoxActionResult.DownloadSaved -> {
                         context?.showToast(R.string.torbox_download_added)
                         // Mirror Real-Debrid: go straight back to the lists screen, refresh the
-                        // downloads list and switch to the Downloads tab so the new item is visible.
+                        // downloads list and switch to the Downloads tab so the new item is
+                        // visible.
                         activityViewModel.setListState(ListState.UpdateDownload)
                         listTabsViewModel.postEventNotice(ListEvent.SetTab(DOWNLOADS_TAB))
                         findNavController().popBackStack()

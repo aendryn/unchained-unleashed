@@ -58,7 +58,6 @@ import com.github.livingwithhippos.unchained.utilities.Event
 import com.github.livingwithhippos.unchained.utilities.MAGNET_PATTERN
 import com.github.livingwithhippos.unchained.utilities.PRIVATE_TOKEN
 import com.github.livingwithhippos.unchained.utilities.PreferenceKeys
-import com.github.livingwithhippos.unchained.utilities.SIGNATURE
 import com.github.livingwithhippos.unchained.utilities.download.DownloadWorker
 import com.github.livingwithhippos.unchained.utilities.extension.isMagnet
 import com.github.livingwithhippos.unchained.utilities.extension.isTorrent
@@ -122,9 +121,9 @@ constructor(
     val jumpTabLiveData = MutableLiveData<Event<String>>()
 
     /**
-     * Which service the user chose to connect from the accounts hub, so the authentication screen can
-     * show only that service's section. Read and cleared by the auth screen; null means show whatever
-     * the current connection state implies.
+     * Which service the user chose to connect from the accounts hub, so the authentication screen
+     * can show only that service's section. Read and cleared by the auth screen; null means show
+     * whatever the current connection state implies.
      */
     var pendingAuthFocus: DebridService? = null
 
@@ -163,7 +162,8 @@ constructor(
                 }
             }
 
-            // No service connected: the user sits on the accounts hub until they pick one to connect.
+            // No service connected: the user sits on the accounts hub until they pick one to
+            // connect.
             state<FSMAuthenticationState.AccountsHub> {
                 // tapped "Connect Real-Debrid": start the Real-Debrid sign-in flow
                 on<FSMAuthenticationEvent.OnConnectService> {

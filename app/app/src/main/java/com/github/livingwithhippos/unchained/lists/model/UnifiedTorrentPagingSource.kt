@@ -27,11 +27,11 @@ import retrofit2.HttpException
  * concurrently), and more loads only as the user scrolls. The per-service cursors live on this
  * instance; Paging creates a fresh source — resetting them — on every refresh/invalidate.
  *
- * Ordering assumption: each service is expected to return its torrents newest-first across pages (RD
- * orders `/torrents` by date descending; TorBox `/mylist` by id, which tracks recency). Each fetched
- * chunk is also sorted client-side as a safeguard, so the only thing relied on is that page N+1 of a
- * service is older than page N. For accounts whose whole list fits in the first chunk per service
- * (the common case) ordering is exact regardless.
+ * Ordering assumption: each service is expected to return its torrents newest-first across pages
+ * (RD orders `/torrents` by date descending; TorBox `/mylist` by id, which tracks recency). Each
+ * fetched chunk is also sorted client-side as a safeguard, so the only thing relied on is that page
+ * N+1 of a service is older than page N. For accounts whose whole list fits in the first chunk per
+ * service (the common case) ordering is exact regardless.
  */
 class UnifiedTorrentPagingSource(
     private val torrentsRepository: TorrentsRepository,
@@ -40,7 +40,8 @@ class UnifiedTorrentPagingSource(
     private val query: String,
 ) : PagingSource<Int, UnifiedTorrent>() {
 
-    // Loads for a given generation arrive sequentially for append paging, but guard the cursor state
+    // Loads for a given generation arrive sequentially for append paging, but guard the cursor
+    // state
     // anyway so a stray concurrent call can't corrupt the buffers.
     private val mutex = Mutex()
     private var initialized = false
@@ -133,7 +134,8 @@ class UnifiedTorrentPagingSource(
     }
 
     private suspend fun fetchRd(): Chunk {
-        // RD's `/torrents` returns an empty body when given an `offset`, so page-based paging is the
+        // RD's `/torrents` returns an empty body when given an `offset`, so page-based paging is
+        // the
         // reliable form (and what the app used before). A fixed page size keeps page boundaries
         // stable no matter how many merged items a given load requests.
         val raw =
@@ -176,12 +178,10 @@ class UnifiedTorrentPagingSource(
 
     override fun getRefreshKey(state: PagingState<Int, UnifiedTorrent>): Int? = null
 
-    /** One fetched page from a single service: the (filtered, sorted) items plus cursor bookkeeping. */
-    private class Chunk(
-        val items: List<UnifiedTorrent>,
-        val rawCount: Int,
-        val exhausted: Boolean,
-    )
+    /**
+     * One fetched page from a single service: the (filtered, sorted) items plus cursor bookkeeping.
+     */
+    private class Chunk(val items: List<UnifiedTorrent>, val rawCount: Int, val exhausted: Boolean)
 
     private companion object {
         // Smallest chunk worth a round trip; keeps tiny configured page sizes from being chatty.

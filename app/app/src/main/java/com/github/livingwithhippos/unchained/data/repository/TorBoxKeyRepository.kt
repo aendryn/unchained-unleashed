@@ -11,9 +11,10 @@ import javax.inject.Singleton
  * unlike RealDebrid we don't need the protobuf credential store.
  *
  * The key lives in a dedicated [SecurePreferences] file that is excluded from cloud backup and
- * device transfer (see res/xml/data_extraction_rules.xml and unchained_backup.xml), so the permanent
- * key never leaves the device in a backup. Earlier versions kept it in the default (backed-up)
- * settings file; [migrateLegacyKey] moves any such key into the secure file on first use.
+ * device transfer (see res/xml/data_extraction_rules.xml and unchained_backup.xml), so the
+ * permanent key never leaves the device in a backup. Earlier versions kept it in the default
+ * (backed-up) settings file; [migrateLegacyKey] moves any such key into the secure file on first
+ * use.
  */
 @Singleton
 class TorBoxKeyRepository

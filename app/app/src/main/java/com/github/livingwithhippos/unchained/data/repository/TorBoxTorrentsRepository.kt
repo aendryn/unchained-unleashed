@@ -37,8 +37,8 @@ constructor(
 ) {
 
     /**
-     * Set whenever the torrent list changes (an add/delete/pause/resume through this app) or when the
-     * user explicitly asks for fresh data. The torrents paging source reads-and-clears this via
+     * Set whenever the torrent list changes (an add/delete/pause/resume through this app) or when
+     * the user explicitly asks for fresh data. The torrents paging source reads-and-clears this via
      * [consumeListStale] to decide whether it must bypass TorBox's server-side `/mylist` cache for
      * the next load. Routine loads (first open, tab switches, scrolling) leave it false and so are
      * served from the cache, which is much faster; anything that could have changed the list flips
@@ -63,13 +63,16 @@ constructor(
      * deletes asynchronously: `controltorrent` returns `success: true` immediately, but `/mylist`
      * (even with `bypass_cache=true`) keeps listing the just-deleted torrent for a short window
      * afterwards. Without this, the post-delete refresh re-fetches that stale list and the torrent
-     * reappears, so the delete looks like a no-op. We suppress these ids from list results until the
-     * server stops returning them; the [DELETED_TOMBSTONE_MS] cap then lets them expire so a tombstone
-     * can never hide a torrent forever. Re-adding a torrent clears its id (see the add* methods).
+     * reappears, so the delete looks like a no-op. We suppress these ids from list results until
+     * the server stops returning them; the [DELETED_TOMBSTONE_MS] cap then lets them expire so a
+     * tombstone can never hide a torrent forever. Re-adding a torrent clears its id (see the add*
+     * methods).
      */
     private val deletedIds = ConcurrentHashMap<Long, Long>()
 
-    /** Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever. */
+    /**
+     * Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever.
+     */
     private fun pruneTombstones() {
         if (deletedIds.isEmpty()) return
         val cutoff = System.currentTimeMillis() - DELETED_TOMBSTONE_MS
@@ -93,10 +96,12 @@ constructor(
                 val body = response.body()
                 if (response.isSuccessful && body?.success == true) {
                     pruneTombstones()
-                    // Hide torrents we just deleted but TorBox's list still returns (see [deletedIds]).
-                    body.data.orEmpty().filterNot { deletedIds.containsKey(it.id) }.map {
-                        it.toUnified()
-                    }
+                    // Hide torrents we just deleted but TorBox's list still returns (see
+                    // [deletedIds]).
+                    body.data
+                        .orEmpty()
+                        .filterNot { deletedIds.containsKey(it.id) }
+                        .map { it.toUnified() }
                 } else {
                     Timber.d("TorBox getTorrentsList failed: ${describe(response, body)}")
                     emptyList()
@@ -315,8 +320,10 @@ constructor(
 
     private companion object {
         // How long a deleted torrent stays hidden before we trust TorBox's list again. Comfortably
-        // longer than the observed window in which `/mylist` keeps returning a just-deleted torrent,
-        // while still bounding the suppression so a tombstone can never hide a torrent indefinitely.
+        // longer than the observed window in which `/mylist` keeps returning a just-deleted
+        // torrent,
+        // while still bounding the suppression so a tombstone can never hide a torrent
+        // indefinitely.
         const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
     }
 }

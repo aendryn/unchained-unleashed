@@ -37,7 +37,9 @@ constructor(
         serviceDao.getServicesTypes(types).map { it.withDecryptedSecrets() }
 
     fun getServicesTypesFlow(types: List<Int>): Flow<List<CompleteRemoteService>> =
-        serviceDao.getServicesTypesFlow(types).map { list -> list.map { it.withDecryptedSecrets() } }
+        serviceDao.getServicesTypesFlow(types).map { list ->
+            list.map { it.withDecryptedSecrets() }
+        }
 
     suspend fun getServiceIDByRow(rowId: Long): Int? = serviceDao.getServiceIDByRow(rowId)
 

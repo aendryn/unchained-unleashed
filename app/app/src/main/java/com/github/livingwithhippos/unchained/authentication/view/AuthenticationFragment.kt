@@ -104,7 +104,8 @@ class AuthenticationFragment : UnchainedFragment() {
             binding.tiTorBoxKey.hideKeyboard()
         }
 
-        // The screen has a Real-Debrid section and a TorBox section. The user reaches it by tapping a
+        // The screen has a Real-Debrid section and a TorBox section. The user reaches it by tapping
+        // a
         // service's "Connect" button on the accounts hub; [pendingAuthFocus] says which one, so we
         // show only that section. (We also fall back to the connection state for safety.)
         val focus = activityViewModel.pendingAuthFocus

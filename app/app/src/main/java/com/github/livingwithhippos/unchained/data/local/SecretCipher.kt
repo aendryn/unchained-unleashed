@@ -13,10 +13,10 @@ import javax.inject.Singleton
 import timber.log.Timber
 
 /**
- * Encrypts/decrypts small secret strings (remote-service passwords and API tokens) so they are never
- * stored as plaintext in the Room database. The AES key lives in the Android Keystore: it is
- * non-exportable and is never included in cloud backup or device transfer, so the backed-up database
- * contains only ciphertext that is useless off the original device.
+ * Encrypts/decrypts small secret strings (remote-service passwords and API tokens) so they are
+ * never stored as plaintext in the Room database. The AES key lives in the Android Keystore: it is
+ * non-exportable and is never included in cloud backup or device transfer, so the backed-up
+ * database contains only ciphertext that is useless off the original device.
  *
  * Both methods are tolerant: [decrypt] returns any value that isn't tagged with [PREFIX] unchanged
  * (so rows written by older builds keep working), and [encrypt] leaves null/empty values and
@@ -43,7 +43,10 @@ class SecretCipher @Inject constructor() {
         return generator.generateKey()
     }
 
-    /** Returns a [PREFIX]-tagged, base64 ciphertext. Null/empty/already-encrypted inputs pass through. */
+    /**
+     * Returns a [PREFIX]-tagged, base64 ciphertext. Null/empty/already-encrypted inputs pass
+     * through.
+     */
     fun encrypt(plain: String?): String? {
         if (plain.isNullOrEmpty() || plain.startsWith(PREFIX)) return plain
         return try {
@@ -71,7 +74,11 @@ class SecretCipher @Inject constructor() {
             val iv = combined.copyOfRange(0, IV_LENGTH)
             val cipherText = combined.copyOfRange(IV_LENGTH, combined.size)
             val cipher = Cipher.getInstance(TRANSFORMATION)
-            cipher.init(Cipher.DECRYPT_MODE, getOrCreateKey(), GCMParameterSpec(TAG_LENGTH_BITS, iv))
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                getOrCreateKey(),
+                GCMParameterSpec(TAG_LENGTH_BITS, iv),
+            )
             String(cipher.doFinal(cipherText), Charsets.UTF_8)
         } catch (e: Exception) {
             // Key lost or data corrupt: return empty so the user can re-enter the secret instead of
