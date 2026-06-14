@@ -1,3 +1,0 @@
-- added f-droid support
-- fixed a bug that stopped users from logging into the app
-- updated libraries

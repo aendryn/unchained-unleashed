@@ -1,0 +1,5 @@
+Account screen overhaul plus a TorBox fix:
+- When no service is connected, the app opens on the accounts screen with a Connect button for each service
+- Real-Debrid now has a Disconnect button, matching TorBox
+- The sign-in screen shows only the service you're connecting
+- Fixed deleted TorBox torrents reappearing in the torrents list

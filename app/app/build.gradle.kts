@@ -222,7 +222,9 @@ dependencies {
 
     implementation(libs.android.work)
 
-    implementation(libs.countly)
+    // Countly is only used by the debug-only TelemetryManager; keep it out of release builds
+    // so the shipped APK contains no analytics/tracking SDK.
+    debugImplementation(libs.countly)
 
     implementation(libs.protobuf.javaLite)
 
