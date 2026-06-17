@@ -402,9 +402,6 @@
     <string name="invalid_package">Geçersiz paket</string>
     <string name="delete_all_downloads">Tüm indirmeleri sil</string>
     <string name="delete_all_torrents">Tüm torrentleri sil</string>
-    <string name="fdroid_update_description">F-Droid\'de yeni bir uygulama sürümü bulundu</string>
-    <string name="playstore_update_description">Play Store\'da daha yeni bir uygulama sürümü bulundu</string>
-    <string name="github_update_description">Github\'da yeni bir uygulama sürümü bulundu</string>
     <string name="new_update">Güncelleme mevcut</string>
     <string name="seeders">Seed</string>
     <string name="no_supported_player_found">Bu medyayı destekleyen bir uygulama bulunamadı. Paylaş düğmesini deneyin.</string>

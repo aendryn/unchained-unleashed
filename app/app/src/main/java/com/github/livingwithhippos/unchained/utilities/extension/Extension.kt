@@ -518,5 +518,3 @@ fun AssetManager.smartList(path: String): Array<String>? {
     if (result.isNullOrEmpty()) if (path.endsWith("/")) return this.list(path.dropLast(1))
     return result
 }
-
-fun ByteArray.toHex(): String = joinToString(separator = "") { eachByte -> "%02x".format(eachByte) }

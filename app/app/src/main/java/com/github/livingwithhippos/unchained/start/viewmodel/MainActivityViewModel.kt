@@ -45,7 +45,6 @@ import com.github.livingwithhippos.unchained.data.repository.PluginRepository
 import com.github.livingwithhippos.unchained.data.repository.PluginRepository.Companion.TYPE_UNCHAINED
 import com.github.livingwithhippos.unchained.data.repository.RemoteDeviceRepository
 import com.github.livingwithhippos.unchained.data.repository.TorrentsRepository
-import com.github.livingwithhippos.unchained.data.repository.UpdateRepository
 import com.github.livingwithhippos.unchained.data.repository.UserRepository
 import com.github.livingwithhippos.unchained.data.repository.VariousApiRepository
 import com.github.livingwithhippos.unchained.lists.view.ListState
@@ -96,7 +95,6 @@ constructor(
     private val customDownloadRepository: CustomDownloadRepository,
     private val torrentsRepository: TorrentsRepository,
     private val debridManager: DebridManager,
-    private val updateRepository: UpdateRepository,
     private val remoteDeviceRepository: RemoteDeviceRepository,
     @ApplicationContext applicationContext: Context,
 ) : ViewModel() {
@@ -1113,11 +1111,6 @@ constructor(
         cacheDir.listFiles()?.forEach { if (it.name != "image_cache") it.deleteRecursively() }
     }
 
-    fun checkUpdates(versionCode: Int, signatures: List<String>) {
-        // Update checks are disabled. Unchained Unleashed ships via GitHub releases and does not
-        // poll a remote version list; users update by installing newer release APKs.
-    }
-
     fun setDownloadFolder(uri: Uri) {
         uri.describeContents()
         preferences.edit { putString(KEY_DOWNLOAD_FOLDER, uri.toString()) }
@@ -1290,8 +1283,6 @@ sealed class MainActivityMessage {
     data class StringID(val id: Int) : MainActivityMessage()
 
     data class InstalledPlugins(val number: Int) : MainActivityMessage()
-
-    data class UpdateFound(val signature: String) : MainActivityMessage()
 
     data object RequireDownloadFolder : MainActivityMessage()
 

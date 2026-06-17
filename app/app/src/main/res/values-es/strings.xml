@@ -398,9 +398,6 @@
     <string name="invalid_package">Paquete no válido</string>
     <string name="delete_all_downloads">Borrar todas las descargas</string>
     <string name="delete_all_torrents">Eliminar todos los torrentes</string>
-    <string name="fdroid_update_description">Se ha encontrado una nueva versión de la aplicación en F-Droid</string>
-    <string name="playstore_update_description">Se ha encontrado una nueva versión de la aplicación en la Play Store</string>
-    <string name="github_update_description">Se ha encontrado una nueva versión de la aplicación en Github</string>
     <string name="new_update">Actualización disponible</string>
     <string name="seeders">Seeders</string>
     <string name="no_supported_player_found">No se ha encontrado ninguna aplicación que soporte este medio. Prueba con el botón de compartir.</string>

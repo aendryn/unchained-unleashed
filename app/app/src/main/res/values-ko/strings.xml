@@ -403,9 +403,6 @@
     <string name="invalid_package">유효하지 않은 패키지</string>
     <string name="delete_all_downloads">모든 다운로드 삭제</string>
     <string name="delete_all_torrents">모든 토렌트 삭제</string>
-    <string name="fdroid_update_description">F-Droid에서 새로운 앱 버전이 발견되었습니다</string>
-    <string name="playstore_update_description">Play 스토어에서 더 새로운 앱 버전이 발견되었습니다</string>
-    <string name="github_update_description">Github에서 새로운 앱 버전이 발견되었습니다</string>
     <string name="new_update">업데이트 가능</string>
     <string name="seeders">시더(Seeders)</string>
     <string name="no_supported_player_found">이 미디어를 지원하는 앱을 찾지 못했습니다. 공유 버튼을 시도해 보세요.</string>

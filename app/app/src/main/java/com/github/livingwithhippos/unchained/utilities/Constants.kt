@@ -107,23 +107,6 @@ val beforeSelectionStatusList = listOf("magnet_conversion", "waiting_files_selec
 const val DOWNLOADS_TAB = 0
 const val TORRENTS_TAB = 1
 
-object SIGNATURE {
-    const val URL =
-        "https://gist.githubusercontent.com/LivingWithHippos/5525e73f0439d06c1c3ff4f9484e35dd/raw/unchained_versions.json"
-    const val PLAY_STORE = "31F17448AA3888B63ED04EB5F965E3F70C12592F"
-    const val F_DROID = "412DABCABBDB75A82FF66F767C71EE045C02275B"
-    const val GITHUB = "0E7BE3FA6B47C20394517C568570E10761A0A4FA"
-}
-
-object APP_LINK {
-    // Unchained Unleashed is currently distributed via GitHub releases only.
-    // No Play Store is planned; re-enable F_DROID with the real listing URL when an
-    // F-Droid release actually ships.
-    // const val PLAY_STORE = ""
-    // const val F_DROID = ""
-    const val GITHUB = "https://github.com/aendryn/unchained-unleashed/releases"
-}
-
 object PreferenceKeys {
     // todo: move all keys here
     object DownloadManager {
