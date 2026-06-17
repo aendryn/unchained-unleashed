@@ -4,9 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUser
-import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
+import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
 import com.github.livingwithhippos.unchained.data.repository.TorBoxKeyRepository
 import com.github.livingwithhippos.unchained.utilities.Event
+import com.github.livingwithhippos.unchained.utilities.TORBOX_API_VERSION
 import com.github.livingwithhippos.unchained.utilities.postEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -23,10 +24,8 @@ import timber.log.Timber
 @HiltViewModel
 class TorBoxAuthViewModel
 @Inject
-constructor(
-    private val torBoxApiHelper: TorBoxApiHelper,
-    private val keyRepository: TorBoxKeyRepository,
-) : ViewModel() {
+constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxKeyRepository) :
+    ViewModel() {
 
     val authResult = MutableLiveData<Event<TorBoxAuthResult>>()
 
@@ -47,7 +46,7 @@ constructor(
             val user =
                 try {
                     withContext(Dispatchers.IO) {
-                        val response = torBoxApiHelper.getUser("Bearer $key")
+                        val response = torBoxApi.getUser(TORBOX_API_VERSION, "Bearer $key")
                         if (response.isSuccessful && response.body()?.success == true)
                             response.body()?.data
                         else null
@@ -75,7 +74,9 @@ constructor(
         viewModelScope.launch {
             val result =
                 try {
-                    withContext(Dispatchers.IO) { torBoxApiHelper.getUser("Bearer $key") }
+                    withContext(Dispatchers.IO) {
+                        torBoxApi.getUser(TORBOX_API_VERSION, "Bearer $key")
+                    }
                 } catch (e: Exception) {
                     Timber.e(e, "TorBox key verification network error")
                     null

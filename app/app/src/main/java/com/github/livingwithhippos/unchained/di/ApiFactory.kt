@@ -9,8 +9,6 @@ import com.github.livingwithhippos.unchained.data.remote.DownloadApi
 import com.github.livingwithhippos.unchained.data.remote.HostsApi
 import com.github.livingwithhippos.unchained.data.remote.StreamingApi
 import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
-import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
-import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.TorrentsApi
 import com.github.livingwithhippos.unchained.data.remote.UnrestrictApi
 import com.github.livingwithhippos.unchained.data.remote.UserApi
@@ -282,8 +280,6 @@ object ApiFactory {
     ): Parser = Parser(preferences, classicClient, dohClient)
 
     // TorBox networking: reuses the ClassicClient OkHttpClient but points at the TorBox base URL.
-    // TorBoxApiHelper is kept (unlike the Real-Debrid helpers) because it does real work —
-    // injecting the API version, multipart encoding and request wrapping — not pure delegation.
     @Provides
     @Singleton
     @TorBoxRetrofit
@@ -299,8 +295,4 @@ object ApiFactory {
     @Singleton
     fun provideTorBoxApi(@TorBoxRetrofit retrofit: Retrofit): TorBoxApi =
         retrofit.create(TorBoxApi::class.java)
-
-    @Provides
-    @Singleton
-    fun provideTorBoxApiHelper(helper: TorBoxApiHelperImpl): TorBoxApiHelper = helper
 }

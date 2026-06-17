@@ -4,10 +4,12 @@ import com.github.livingwithhippos.unchained.data.model.NetworkError
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
 import com.github.livingwithhippos.unchained.data.model.toUnified
+import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
-import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
+import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
+import com.github.livingwithhippos.unchained.utilities.TORBOX_API_VERSION
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -17,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import retrofit2.Response
@@ -31,10 +34,7 @@ import timber.log.Timber
 @Singleton
 class TorBoxTorrentsRepository
 @Inject
-constructor(
-    private val torBoxApiHelper: TorBoxApiHelper,
-    private val keyRepository: TorBoxKeyRepository,
-) {
+constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxKeyRepository) {
 
     /**
      * Set whenever the torrent list changes (an add/delete/pause/resume through this app) or when
@@ -85,6 +85,11 @@ constructor(
         return "Bearer $key"
     }
 
+    // TorBox's createtorrent endpoint is multipart/form-data, so scalar fields go as text parts.
+    private val plainText = "text/plain".toMediaTypeOrNull()
+
+    private fun String.asPart(): RequestBody = toRequestBody(plainText)
+
     suspend fun getTorrentsList(
         offset: Int? = null,
         limit: Int? = 1000,
@@ -92,7 +97,14 @@ constructor(
     ): List<UnifiedTorrent> =
         withContext(Dispatchers.IO) {
             try {
-                val response = torBoxApiHelper.getTorrentsList(bearer(), offset, limit, bypassCache)
+                val response =
+                    torBoxApi.getTorrentsList(
+                        TORBOX_API_VERSION,
+                        bearer(),
+                        bypassCache,
+                        offset,
+                        limit,
+                    )
                 val body = response.body()
                 if (response.isSuccessful && body?.success == true) {
                     pruneTombstones()
@@ -115,7 +127,7 @@ constructor(
     suspend fun getTorrentInfo(id: Long): UnifiedTorrent? =
         withContext(Dispatchers.IO) {
             try {
-                val response = torBoxApiHelper.getTorrentInfo(bearer(), id)
+                val response = torBoxApi.getTorrentInfo(TORBOX_API_VERSION, bearer(), id)
                 val body = response.body()
                 if (response.isSuccessful && body?.success == true) {
                     body.data?.toUnified()
@@ -130,7 +142,7 @@ constructor(
     suspend fun getRawTorrentInfo(id: Long): TorBoxTorrent? =
         withContext(Dispatchers.IO) {
             try {
-                val response = torBoxApiHelper.getTorrentInfo(bearer(), id)
+                val response = torBoxApi.getTorrentInfo(TORBOX_API_VERSION, bearer(), id)
                 val body = response.body()
                 if (response.isSuccessful && body?.success == true) body.data else null
             } catch (e: Exception) {
@@ -149,13 +161,14 @@ constructor(
         withContext(Dispatchers.IO) {
             try {
                 val response =
-                    torBoxApiHelper.createTorrentFromMagnet(
+                    torBoxApi.createTorrentFromMagnet(
+                        apiVersion = TORBOX_API_VERSION,
                         token = bearer(),
-                        magnet = magnet,
-                        seed = seed,
-                        allowZip = allowZip,
-                        name = name,
-                        asQueued = asQueued,
+                        magnet = magnet.asPart(),
+                        seed = seed?.toString()?.asPart(),
+                        allowZip = allowZip?.toString()?.asPart(),
+                        name = name?.asPart(),
+                        asQueued = asQueued?.toString()?.asPart(),
                     )
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
@@ -186,13 +199,14 @@ constructor(
                     torrentFile.asRequestBody("application/x-bittorrent".toMediaTypeOrNull())
                 val part = MultipartBody.Part.createFormData("file", torrentFile.name, requestFile)
                 val response =
-                    torBoxApiHelper.createTorrentFromFile(
+                    torBoxApi.createTorrentFromFile(
+                        apiVersion = TORBOX_API_VERSION,
                         token = bearer(),
                         file = part,
-                        seed = seed,
-                        allowZip = allowZip,
-                        name = name,
-                        asQueued = asQueued,
+                        seed = seed?.toString()?.asPart(),
+                        allowZip = allowZip?.toString()?.asPart(),
+                        name = name?.asPart(),
+                        asQueued = asQueued?.toString()?.asPart(),
                     )
                 val body = response.body()
                 val newId = body?.data?.torrentId ?: body?.data?.queuedId
@@ -225,13 +239,11 @@ constructor(
                     )
                 val part = MultipartBody.Part.createFormData("file", "upload.torrent", body)
                 val response =
-                    torBoxApiHelper.createTorrentFromFile(
+                    torBoxApi.createTorrentFromFile(
+                        apiVersion = TORBOX_API_VERSION,
                         token = bearer(),
                         file = part,
-                        seed = null,
-                        allowZip = null,
-                        name = name,
-                        asQueued = null,
+                        name = name?.asPart(),
                     )
                 val resp = response.body()
                 val newId = resp?.data?.torrentId ?: resp?.data?.queuedId
@@ -264,7 +276,12 @@ constructor(
     ): EitherResult<UnchainedNetworkException, Unit> =
         withContext(Dispatchers.IO) {
             try {
-                val response = torBoxApiHelper.controlTorrent(bearer(), id, operation)
+                val response =
+                    torBoxApi.controlTorrent(
+                        TORBOX_API_VERSION,
+                        bearer(),
+                        TorBoxControlTorrentRequest(id, operation),
+                    )
                 val body = response.body()
                 // TorBox returns HTTP 200 even when it rejects the operation, signalling the real
                 // outcome only via the `success` envelope field. Checking the status alone made a
@@ -301,7 +318,14 @@ constructor(
                         NetworkError(-1, "Missing TorBox API key")
                     )
             try {
-                val response = torBoxApiHelper.requestDownloadLink(key, torrentId, fileId, zipLink)
+                val response =
+                    torBoxApi.requestDownloadLink(
+                        TORBOX_API_VERSION,
+                        key,
+                        torrentId,
+                        fileId,
+                        zipLink,
+                    )
                 val body = response.body()
                 val link = body?.data
                 if (response.isSuccessful && body?.success == true && !link.isNullOrBlank()) {
