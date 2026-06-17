@@ -3,7 +3,7 @@ package com.github.livingwithhippos.unchained.data.repository
 import com.github.livingwithhippos.unchained.data.local.ProtoStore
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
-import com.github.livingwithhippos.unchained.data.remote.UnrestrictApiHelper
+import com.github.livingwithhippos.unchained.data.remote.UnrestrictApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import javax.inject.Inject
 import kotlinx.coroutines.delay
@@ -13,7 +13,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 
 class UnrestrictRepository
 @Inject
-constructor(protoStore: ProtoStore, private val unrestrictApiHelper: UnrestrictApiHelper) :
+constructor(protoStore: ProtoStore, private val unrestrictApi: UnrestrictApi) :
     BaseRepository(protoStore) {
 
     suspend fun getEitherUnrestrictedLink(
@@ -26,7 +26,7 @@ constructor(protoStore: ProtoStore, private val unrestrictApiHelper: UnrestrictA
         val linkResponse =
             eitherApiResult(
                 call = {
-                    unrestrictApiHelper.getUnrestrictedLink(
+                    unrestrictApi.getUnrestrictedLink(
                         token = "Bearer $token",
                         link = link,
                         password = password,
@@ -63,7 +63,7 @@ constructor(protoStore: ProtoStore, private val unrestrictApiHelper: UnrestrictA
         val folderResponse: EitherResult<UnchainedNetworkException, List<String>> =
             eitherApiResult(
                 call = {
-                    unrestrictApiHelper.getUnrestrictedFolder(token = "Bearer $token", link = link)
+                    unrestrictApi.getUnrestrictedFolder(token = "Bearer $token", link = link)
                 },
                 errorMessage = "Error Fetching Unrestricted Folders Info",
             )
@@ -86,10 +86,7 @@ constructor(protoStore: ProtoStore, private val unrestrictApiHelper: UnrestrictA
         val uploadResponse =
             eitherApiResult(
                 call = {
-                    unrestrictApiHelper.uploadContainer(
-                        token = "Bearer $token",
-                        container = requestBody,
-                    )
+                    unrestrictApi.uploadContainer(token = "Bearer $token", container = requestBody)
                 },
                 errorMessage = "Error Uploading Container",
             )
@@ -102,9 +99,7 @@ constructor(protoStore: ProtoStore, private val unrestrictApiHelper: UnrestrictA
 
         val containerResponse =
             safeApiCall(
-                call = {
-                    unrestrictApiHelper.getContainerLinks(token = "Bearer $token", link = link)
-                },
+                call = { unrestrictApi.getContainerLinks(token = "Bearer $token", link = link) },
                 errorMessage = "Error getting container files",
             )
 

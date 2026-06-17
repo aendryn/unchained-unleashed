@@ -32,10 +32,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.settings.view.SettingsFragment.Companion.THEME_AUTO
 import com.github.livingwithhippos.unchained.settings.view.SettingsFragment.Companion.THEME_DAY
@@ -362,53 +358,6 @@ fun Activity.getUpdatedLocaleContext(context: Context, language: String): Contex
     Locale.setDefault(locale)
     configuration.setLocale(locale)
     return context.createConfigurationContext(configuration)
-}
-
-fun <T, K, R> LiveData<T>.combineWith(liveData: LiveData<K>, block: (T?, K?) -> R): LiveData<R> {
-    val result = MediatorLiveData<R>()
-    result.addSource(this) { result.value = block(this.value, liveData.value) }
-    result.addSource(liveData) { result.value = block(this.value, liveData.value) }
-    return result
-}
-
-fun <T, K> zipLiveData(t: LiveData<T>, k: LiveData<K>): LiveData<Pair<T, K>> {
-    return MediatorLiveData<Pair<T, K>>().apply {
-        var lastT: T? = null
-        var lastK: K? = null
-
-        fun update() {
-            val localLastT = lastT
-            val localLastK = lastK
-            if (localLastT != null && localLastK != null) this.value = Pair(localLastT, localLastK)
-        }
-
-        addSource(t) {
-            lastT = it
-            update()
-        }
-        addSource(k) {
-            lastK = it
-            update()
-        }
-    }
-}
-
-fun <T> LiveData<T>.observeOnce(
-    lifecycleOwner: LifecycleOwner,
-    observer: Observer<T>,
-    untilNotNull: Boolean = false,
-) {
-    observe(
-        lifecycleOwner,
-        object : Observer<T> {
-            override fun onChanged(value: T) {
-                observer.onChanged(value)
-                if (untilNotNull) {
-                    if (value != null) removeObserver(this)
-                } else removeObserver(this)
-            }
-        },
-    )
 }
 
 fun AppCompatActivity.setNavigationBarColor(color: Int, alpha: Int = 0) {

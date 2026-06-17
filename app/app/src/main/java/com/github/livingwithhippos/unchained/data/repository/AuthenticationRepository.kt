@@ -5,20 +5,20 @@ import com.github.livingwithhippos.unchained.data.model.Authentication
 import com.github.livingwithhippos.unchained.data.model.Secrets
 import com.github.livingwithhippos.unchained.data.model.Token
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
-import com.github.livingwithhippos.unchained.data.remote.AuthApiHelper
+import com.github.livingwithhippos.unchained.data.remote.AuthenticationApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import javax.inject.Inject
 
 class AuthenticationRepository
 @Inject
-constructor(private val protoStore: ProtoStore, private val apiHelper: AuthApiHelper) :
+constructor(private val protoStore: ProtoStore, private val api: AuthenticationApi) :
     BaseRepository(protoStore) {
 
     suspend fun getVerificationCode(): Authentication? {
 
         val authResponse =
             safeApiCall(
-                call = { apiHelper.getAuthentication() },
+                call = { api.getAuthentication() },
                 errorMessage = "Error Fetching Authentication Info",
             )
 
@@ -29,7 +29,7 @@ constructor(private val protoStore: ProtoStore, private val apiHelper: AuthApiHe
 
         val secretResponse =
             safeApiCall(
-                call = { apiHelper.getSecrets(deviceCode = code) },
+                call = { api.getSecrets(deviceCode = code) },
                 errorMessage = "Error Fetching Secrets",
             )
         // fixme: if we receive 403 we must restart the process, ths returns null instead
@@ -42,11 +42,7 @@ constructor(private val protoStore: ProtoStore, private val apiHelper: AuthApiHe
         val tokenResponse =
             safeApiCall(
                 call = {
-                    apiHelper.getToken(
-                        clientId = clientId,
-                        clientSecret = clientSecret,
-                        code = code,
-                    )
+                    api.getToken(clientId = clientId, clientSecret = clientSecret, code = code)
                 },
                 errorMessage = "Error Fetching Token",
             )
@@ -63,11 +59,7 @@ constructor(private val protoStore: ProtoStore, private val apiHelper: AuthApiHe
         val tokenResponse =
             eitherApiResult(
                 call = {
-                    apiHelper.getToken(
-                        clientId = clientId,
-                        clientSecret = clientSecret,
-                        code = code,
-                    )
+                    api.getToken(clientId = clientId, clientSecret = clientSecret, code = code)
                 },
                 errorMessage = "Error Fetching Token",
             )

@@ -8,8 +8,6 @@ import com.github.livingwithhippos.unchained.data.model.KodiParams
 import com.github.livingwithhippos.unchained.data.model.KodiRequest
 import com.github.livingwithhippos.unchained.data.model.KodiResponse
 import com.github.livingwithhippos.unchained.data.remote.KodiApi
-import com.github.livingwithhippos.unchained.data.remote.KodiApiHelper
-import com.github.livingwithhippos.unchained.data.remote.KodiApiHelperImpl
 import com.github.livingwithhippos.unchained.di.ClassicClient
 import com.github.livingwithhippos.unchained.utilities.addHttpScheme
 import javax.inject.Inject
@@ -36,10 +34,6 @@ constructor(protoStore: ProtoStore, @param:ClassicClient private val client: OkH
         return provideRetrofit(baseUrl).create(KodiApi::class.java)
     }
 
-    private fun provideApiHelper(baseUrl: String): KodiApiHelper {
-        return KodiApiHelperImpl(provideApi(baseUrl))
-    }
-
     suspend fun getVolume(
         baseUrl: String,
         port: Int,
@@ -47,12 +41,12 @@ constructor(protoStore: ProtoStore, @param:ClassicClient private val client: OkH
         password: String? = null,
     ): KodiGenericResponse? {
         try {
-            val kodiApiHelper: KodiApiHelper = provideApiHelper("${addHttpScheme(baseUrl)}:$port/")
+            val kodiApi: KodiApi = provideApi("${addHttpScheme(baseUrl)}:$port/")
             val kodiResponse =
                 safeApiCall(
                     call = {
-                        kodiApiHelper.getVolume(
-                            request =
+                        kodiApi.getVolume(
+                            body =
                                 KodiRequest(
                                     method = "Application.GetProperties",
                                     params = KodiParams(properties = listOf("volume")),
@@ -76,12 +70,12 @@ constructor(protoStore: ProtoStore, @param:ClassicClient private val client: OkH
         password: String? = null,
     ): KodiGenericResponse? {
         try {
-            val kodiApiHelper: KodiApiHelper = provideApiHelper(address)
+            val kodiApi: KodiApi = provideApi(address)
             val kodiResponse =
                 safeApiCall(
                     call = {
-                        kodiApiHelper.getVolume(
-                            request =
+                        kodiApi.getVolume(
+                            body =
                                 KodiRequest(
                                     method = "Application.GetProperties",
                                     params = KodiParams(properties = listOf("volume")),
@@ -108,16 +102,15 @@ constructor(protoStore: ProtoStore, @param:ClassicClient private val client: OkH
     ): KodiResponse? {
 
         try {
-            val kodiApiHelper: KodiApiHelper =
-                if (baseUrl.startsWith("http", ignoreCase = true))
-                    provideApiHelper("$baseUrl:$port/")
-                else provideApiHelper("http://$baseUrl:$port/")
+            val kodiApi: KodiApi =
+                if (baseUrl.startsWith("http", ignoreCase = true)) provideApi("$baseUrl:$port/")
+                else provideApi("http://$baseUrl:$port/")
 
             val kodiResponse =
                 safeApiCall(
                     call = {
-                        kodiApiHelper.openUrl(
-                            request =
+                        kodiApi.openUrl(
+                            body =
                                 KodiRequest(
                                     method = "Player.Open",
                                     params = KodiParams(item = KodiItem(fileUrl = url)),
@@ -143,15 +136,14 @@ constructor(protoStore: ProtoStore, @param:ClassicClient private val client: OkH
     ): KodiResponse? {
 
         try {
-            val kodiApiHelper: KodiApiHelper =
-                if (address.endsWith("/")) provideApiHelper(address)
-                else provideApiHelper("$address/")
+            val kodiApi: KodiApi =
+                if (address.endsWith("/")) provideApi(address) else provideApi("$address/")
 
             val kodiResponse =
                 safeApiCall(
                     call = {
-                        kodiApiHelper.openUrl(
-                            request =
+                        kodiApi.openUrl(
+                            body =
                                 KodiRequest(
                                     method = "Player.Open",
                                     params = KodiParams(item = KodiItem(fileUrl = url)),

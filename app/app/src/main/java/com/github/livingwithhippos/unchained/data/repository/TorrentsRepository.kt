@@ -5,7 +5,7 @@ import com.github.livingwithhippos.unchained.data.model.AvailableHost
 import com.github.livingwithhippos.unchained.data.model.TorrentItem
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UploadedTorrent
-import com.github.livingwithhippos.unchained.data.remote.TorrentApiHelper
+import com.github.livingwithhippos.unchained.data.remote.TorrentsApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import javax.inject.Inject
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -15,14 +15,14 @@ import timber.log.Timber
 
 class TorrentsRepository
 @Inject
-constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelper) :
+constructor(protoStore: ProtoStore, private val torrentsApi: TorrentsApi) :
     BaseRepository(protoStore) {
 
     suspend fun getAvailableHosts(): List<AvailableHost>? {
         val token = getToken()
         val hostResponse: List<AvailableHost>? =
             safeApiCall(
-                call = { torrentApiHelper.getAvailableHosts(token = "Bearer $token") },
+                call = { torrentsApi.getAvailableHosts(token = "Bearer $token") },
                 errorMessage = "Error Retrieving Available Hosts",
             )
 
@@ -33,7 +33,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
         val token = getToken()
         val torrentResponse: TorrentItem? =
             safeApiCall(
-                call = { torrentApiHelper.getTorrentInfo(token = "Bearer $token", id = id) },
+                call = { torrentsApi.getTorrentInfo(token = "Bearer $token", id = id) },
                 errorMessage = "Error Retrieving Torrent Info",
             )
 
@@ -56,7 +56,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
         val addTorrentResponse =
             eitherApiResult(
                 call = {
-                    torrentApiHelper.addTorrent(
+                    torrentsApi.addTorrent(
                         token = "Bearer $token",
                         binaryTorrent = requestBody,
                         host = host,
@@ -76,11 +76,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
         val torrentResponse =
             eitherApiResult(
                 call = {
-                    torrentApiHelper.addMagnet(
-                        token = "Bearer $token",
-                        magnet = magnet,
-                        host = host,
-                    )
+                    torrentsApi.addMagnet(token = "Bearer $token", magnet = magnet, host = host)
                 },
                 errorMessage = "Error Uploading Torrent From Magnet",
             )
@@ -99,7 +95,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
         val torrentsResponse: List<TorrentItem>? =
             safeApiCall(
                 call = {
-                    torrentApiHelper.getTorrentsList(
+                    torrentsApi.getTorrentsList(
                         token = "Bearer $token",
                         offset = offset,
                         page = page,
@@ -123,9 +119,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
         // this call has no return type
         val response =
             eitherApiResult(
-                call = {
-                    torrentApiHelper.selectFiles(token = "Bearer $token", id = id, files = files)
-                },
+                call = { torrentsApi.selectFiles(token = "Bearer $token", id = id, files = files) },
                 errorMessage = "Error Selecting Torrent Files",
             )
 
@@ -137,7 +131,7 @@ constructor(protoStore: ProtoStore, private val torrentApiHelper: TorrentApiHelp
 
         val response =
             eitherApiResult(
-                call = { torrentApiHelper.deleteTorrent(token = "Bearer $token", id = id) },
+                call = { torrentsApi.deleteTorrent(token = "Bearer $token", id = id) },
                 errorMessage = "Error deleting Torrent",
             )
 

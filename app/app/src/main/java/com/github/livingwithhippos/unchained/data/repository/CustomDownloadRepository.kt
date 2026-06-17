@@ -2,7 +2,7 @@ package com.github.livingwithhippos.unchained.data.repository
 
 import com.github.livingwithhippos.unchained.data.local.ProtoStore
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
-import com.github.livingwithhippos.unchained.data.remote.CustomDownloadHelper
+import com.github.livingwithhippos.unchained.data.remote.CustomDownload
 import com.github.livingwithhippos.unchained.plugins.model.Plugin
 import com.github.livingwithhippos.unchained.repository.model.JsonPluginRepository
 import com.github.livingwithhippos.unchained.utilities.EitherResult
@@ -20,7 +20,7 @@ import kotlinx.coroutines.withContext
 
 class CustomDownloadRepository
 @Inject
-constructor(protoStore: ProtoStore, private val customDownloadHelper: CustomDownloadHelper) :
+constructor(protoStore: ProtoStore, private val customDownload: CustomDownload) :
     BaseRepository(protoStore) {
 
     fun downloadToCache(
@@ -31,7 +31,7 @@ constructor(protoStore: ProtoStore, private val customDownloadHelper: CustomDown
     ): Flow<DownloadResult> = channelFlow {
         if (url.isWebUrl()) {
             // todo: use the FileWriter and Downloader helper classes
-            val call = customDownloadHelper.getFile(url)
+            val call = customDownload.getFile(url)
             if (call.isSuccessful) {
                 val body = call.body()
                 if (body != null) {
@@ -91,14 +91,14 @@ constructor(protoStore: ProtoStore, private val customDownloadHelper: CustomDown
     ): EitherResult<UnchainedNetworkException, JsonPluginRepository> {
 
         return eitherApiResult(
-            call = { customDownloadHelper.getPluginsRepository(link) },
+            call = { customDownload.getPluginsRepository(link) },
             errorMessage = "Error Fetching plugins repository",
         )
     }
 
     suspend fun downloadPlugin(link: String): EitherResult<UnchainedNetworkException, Plugin> {
         return eitherApiResult(
-            call = { customDownloadHelper.getPlugin(link) },
+            call = { customDownload.getPlugin(link) },
             errorMessage = "Error fetching plugin",
         )
     }
@@ -111,7 +111,7 @@ constructor(protoStore: ProtoStore, private val customDownloadHelper: CustomDown
      */
     suspend fun downloadAsString(url: String): EitherResult<UnchainedNetworkException, String> {
         return eitherApiResult(
-            call = { customDownloadHelper.getAsString(url) },
+            call = { customDownload.getString(url) },
             errorMessage = "Error fetching url as a string",
         )
     }

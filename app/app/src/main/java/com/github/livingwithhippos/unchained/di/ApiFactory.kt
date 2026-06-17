@@ -3,36 +3,22 @@ package com.github.livingwithhippos.unchained.di
 import android.content.SharedPreferences
 import com.github.livingwithhippos.unchained.BuildConfig
 import com.github.livingwithhippos.unchained.data.model.EmptyBodyInterceptor
-import com.github.livingwithhippos.unchained.data.remote.AuthApiHelper
-import com.github.livingwithhippos.unchained.data.remote.AuthApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.AuthenticationApi
 import com.github.livingwithhippos.unchained.data.remote.CustomDownload
-import com.github.livingwithhippos.unchained.data.remote.CustomDownloadHelper
-import com.github.livingwithhippos.unchained.data.remote.CustomDownloadHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.DownloadApi
-import com.github.livingwithhippos.unchained.data.remote.DownloadApiHelper
-import com.github.livingwithhippos.unchained.data.remote.DownloadApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.HostsApi
-import com.github.livingwithhippos.unchained.data.remote.HostsApiHelper
-import com.github.livingwithhippos.unchained.data.remote.HostsApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.StreamingApi
-import com.github.livingwithhippos.unchained.data.remote.StreamingApiHelper
-import com.github.livingwithhippos.unchained.data.remote.StreamingApiHelperImpl
-import com.github.livingwithhippos.unchained.data.remote.TorrentApiHelper
-import com.github.livingwithhippos.unchained.data.remote.TorrentApiHelperImpl
+import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
+import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelper
+import com.github.livingwithhippos.unchained.data.remote.TorBoxApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.TorrentsApi
 import com.github.livingwithhippos.unchained.data.remote.UnrestrictApi
-import com.github.livingwithhippos.unchained.data.remote.UnrestrictApiHelper
-import com.github.livingwithhippos.unchained.data.remote.UnrestrictApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.UserApi
-import com.github.livingwithhippos.unchained.data.remote.UserApiHelper
-import com.github.livingwithhippos.unchained.data.remote.UserApiHelperImpl
 import com.github.livingwithhippos.unchained.data.remote.VariousApi
-import com.github.livingwithhippos.unchained.data.remote.VariousApiHelper
-import com.github.livingwithhippos.unchained.data.remote.VariousApiHelperImpl
 import com.github.livingwithhippos.unchained.plugins.Parser
 import com.github.livingwithhippos.unchained.utilities.BASE_AUTH_URL
 import com.github.livingwithhippos.unchained.utilities.BASE_URL
+import com.github.livingwithhippos.unchained.utilities.TORBOX_BASE_URL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -230,20 +216,12 @@ object ApiFactory {
         return retrofit.create(AuthenticationApi::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideAuthenticationApiHelper(apiHelper: AuthApiHelperImpl): AuthApiHelper = apiHelper
-
     // user api injection
     @Provides
     @Singleton
     fun provideUserApi(@ApiRetrofit retrofit: Retrofit): UserApi {
         return retrofit.create(UserApi::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideUserApiHelper(apiHelper: UserApiHelperImpl): UserApiHelper = apiHelper
 
     // unrestrict api injection
     @Provides
@@ -252,21 +230,12 @@ object ApiFactory {
         return retrofit.create(UnrestrictApi::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideUnrestrictApiHelper(apiHelper: UnrestrictApiHelperImpl): UnrestrictApiHelper =
-        apiHelper
-
     // streaming api injection
     @Provides
     @Singleton
     fun provideStreamingApi(@ApiRetrofit retrofit: Retrofit): StreamingApi {
         return retrofit.create(StreamingApi::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideStreamingApiHelper(apiHelper: StreamingApiHelperImpl): StreamingApiHelper = apiHelper
 
     // torrent api injection
     @Provides
@@ -275,20 +244,12 @@ object ApiFactory {
         return retrofit.create(TorrentsApi::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideTorrentsApiApiHelper(apiHelper: TorrentApiHelperImpl): TorrentApiHelper = apiHelper
-
     // download api injection
     @Provides
     @Singleton
     fun provideDownloadsApi(@ApiRetrofit retrofit: Retrofit): DownloadApi {
         return retrofit.create(DownloadApi::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideDownloadApiHelper(apiHelper: DownloadApiHelperImpl): DownloadApiHelper = apiHelper
 
     // hosts api injection
     @Provides
@@ -297,10 +258,6 @@ object ApiFactory {
         return retrofit.create(HostsApi::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideHostsApiHelper(apiHelper: HostsApiHelperImpl): HostsApiHelper = apiHelper
-
     // various api injection
     @Provides
     @Singleton
@@ -308,21 +265,12 @@ object ApiFactory {
         return retrofit.create(VariousApi::class.java)
     }
 
-    @Provides
-    @Singleton
-    fun provideVariousApiHelper(apiHelper: VariousApiHelperImpl): VariousApiHelper = apiHelper
-
     // custom download injection
     @Provides
     @Singleton
     fun provideCustomDownload(@ApiRetrofit retrofit: Retrofit): CustomDownload {
         return retrofit.create(CustomDownload::class.java)
     }
-
-    @Provides
-    @Singleton
-    fun provideCustomDownloadHelper(customHelper: CustomDownloadHelperImpl): CustomDownloadHelper =
-        customHelper
 
     /** Search Plugins stuff */
     @Provides
@@ -332,4 +280,27 @@ object ApiFactory {
         @ClassicClient classicClient: OkHttpClient,
         @DOHClient dohClient: OkHttpClient,
     ): Parser = Parser(preferences, classicClient, dohClient)
+
+    // TorBox networking: reuses the ClassicClient OkHttpClient but points at the TorBox base URL.
+    // TorBoxApiHelper is kept (unlike the Real-Debrid helpers) because it does real work —
+    // injecting the API version, multipart encoding and request wrapping — not pure delegation.
+    @Provides
+    @Singleton
+    @TorBoxRetrofit
+    fun provideTorBoxRetrofit(@ClassicClient okHttpClient: OkHttpClient): Retrofit =
+        Retrofit.Builder()
+            .client(okHttpClient)
+            .baseUrl(TORBOX_BASE_URL)
+            .addConverterFactory(ScalarsConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+
+    @Provides
+    @Singleton
+    fun provideTorBoxApi(@TorBoxRetrofit retrofit: Retrofit): TorBoxApi =
+        retrofit.create(TorBoxApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTorBoxApiHelper(helper: TorBoxApiHelperImpl): TorBoxApiHelper = helper
 }

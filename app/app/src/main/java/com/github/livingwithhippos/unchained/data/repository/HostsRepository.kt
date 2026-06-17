@@ -5,7 +5,7 @@ import com.github.livingwithhippos.unchained.data.local.ProtoStore
 import com.github.livingwithhippos.unchained.data.model.HostRegex
 import com.github.livingwithhippos.unchained.data.model.REGEX_TYPE_FOLDER
 import com.github.livingwithhippos.unchained.data.model.REGEX_TYPE_HOST
-import com.github.livingwithhippos.unchained.data.remote.HostsApiHelper
+import com.github.livingwithhippos.unchained.data.remote.HostsApi
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 import javax.inject.Inject
@@ -14,7 +14,7 @@ class HostsRepository
 @Inject
 constructor(
     protoStore: ProtoStore,
-    private val hostsApiHelper: HostsApiHelper,
+    private val hostsApi: HostsApi,
     private val hostRegexDao: HostRegexDao,
 ) : BaseRepository(protoStore) {
 
@@ -28,7 +28,7 @@ constructor(
 
         val hostResponse =
             safeApiCall(
-                call = { hostsApiHelper.getHostsRegex() },
+                call = { hostsApi.getHostsRegex() },
                 errorMessage = "Error Fetching Hosts Regex",
             )
         val list = mutableListOf<HostRegex>()
@@ -49,7 +49,7 @@ constructor(
 
         val hostResponse =
             safeApiCall(
-                call = { hostsApiHelper.getHostsFoldersRegex() },
+                call = { hostsApi.getHostsFoldersRegex() },
                 errorMessage = "Error Fetching Hosts Folders Regex",
             )
         val list = mutableListOf<HostRegex>()
