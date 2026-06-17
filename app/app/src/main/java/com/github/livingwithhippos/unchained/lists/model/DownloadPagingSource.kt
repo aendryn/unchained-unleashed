@@ -6,6 +6,8 @@ import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.repository.DownloadRepository
 import com.github.livingwithhippos.unchained.data.repository.TorBoxDownloadsRepository
 import java.io.IOException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import retrofit2.HttpException
 
 private const val DOWNLOAD_STARTING_PAGE_INDEX = 1
@@ -20,13 +22,22 @@ class DownloadPagingSource(
         val page = params.key ?: DOWNLOAD_STARTING_PAGE_INDEX
 
         return try {
-            val rdDownloads = downloadRepository.getDownloads(null, page, params.loadSize)
-
-            // Locally stored TorBox downloads aren't paged; surface them once, at the top of the
-            // first page, so they sit alongside the Real-Debrid list.
-            val torBoxDownloads =
-                if (page == DOWNLOAD_STARTING_PAGE_INDEX) torBoxDownloadsRepository.getDownloads()
-                else emptyList()
+            // Fetch the (network) Real-Debrid page and the (local) TorBox downloads concurrently so
+            // the first page waits for the slower of the two, not their sum.
+            val (rdDownloads, torBoxDownloads) =
+                coroutineScope {
+                    val rdJob = async {
+                        downloadRepository.getDownloads(null, page, params.loadSize)
+                    }
+                    // Locally stored TorBox downloads aren't paged; surface them once, at the top
+                    // of
+                    // the first page, so they sit alongside the Real-Debrid list.
+                    val torBoxJob =
+                        if (page == DOWNLOAD_STARTING_PAGE_INDEX)
+                            async { torBoxDownloadsRepository.getDownloads() }
+                        else null
+                    rdJob.await() to (torBoxJob?.await() ?: emptyList())
+                }
 
             val response =
                 (torBoxDownloads + rdDownloads).let { combined ->
