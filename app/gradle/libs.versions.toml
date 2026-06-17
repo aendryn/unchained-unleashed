@@ -1,9 +1,6 @@
 [versions]
 android_gradle_plugin = "9.1.1"
 appcompat = "1.7.1"
-benchmark = "1.4.1"
-profileinstaller = "1.4.1"
-uiautomator = "2.3.0"
 constraint_layout = "2.2.1"
 coil = "2.7.0"
 core_ktx = "1.18.0"
@@ -66,9 +63,6 @@ fragment_ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref
 datastore_prefs = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 datastore_core = { group = "androidx.datastore", name = "datastore", version.ref = "datastore" }
 test_espresso = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
-benchmark_macro_junit4 = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "benchmark" }
-androidx_profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -126,5 +120,3 @@ protobuf = { id = "com.google.protobuf", version.ref = "protobuf_plugin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt_android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 room = { id = "androidx.room", version.ref = "room" }
-android_test = { id = "com.android.test", version.ref = "android_gradle_plugin" }
-baselineprofile = { id = "androidx.baselineprofile", version.ref = "benchmark" }

@@ -24,4 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Unchained"
 include(":app")
-include(":baselineprofile")
+ 
