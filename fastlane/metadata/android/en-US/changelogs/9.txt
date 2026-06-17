@@ -1,0 +1,3 @@
+- Downloads and Torrents now show your last-seen items instantly while fresh data loads
+- Faster loading when using both Real-Debrid and TorBox together
+- Leaner app after removing unused code
