@@ -47,3 +47,10 @@
 # Parcelable data models used as nav arguments (UnifiedTorrent, TorrentItem,
 # DownloadItem, ...) so they aren't shrunk/obfuscated away.
 -keep class com.github.livingwithhippos.unchained.data.model.** implements android.os.Parcelable { *; }
+
+# Moshi serializes enums by looking up their constants reflectively
+# (EnumJsonAdapter -> Class.getField("REAL_DEBRID")). Enums aren't Parcelable, so
+# the rule above doesn't cover them and R8 would rename the constants, causing a
+# NoSuchFieldException at adapter construction (e.g. UnifiedTorrent's DebridService /
+# UnifiedTorrentStatus). Keep the model enums' members so JSON works in release.
+-keepclassmembers enum com.github.livingwithhippos.unchained.data.model.** { *; }
