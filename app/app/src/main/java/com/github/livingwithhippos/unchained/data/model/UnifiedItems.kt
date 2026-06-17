@@ -2,6 +2,7 @@ package com.github.livingwithhippos.unchained.data.model
 
 import android.os.Parcelable
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
+import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -42,6 +43,7 @@ enum class UnifiedTorrentStatus {
  * Keeping a single model (instead of a sealed class per service) means the existing paging adapter,
  * DiffUtil and selection tracker only need to know about one type; the service is just a field.
  */
+@JsonClass(generateAdapter = true)
 @Parcelize
 data class UnifiedTorrent(
     val service: DebridService,

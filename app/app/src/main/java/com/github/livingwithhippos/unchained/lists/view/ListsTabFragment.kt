@@ -17,6 +17,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.recyclerview.selection.SelectionPredicates
 import androidx.recyclerview.selection.SelectionTracker
@@ -25,6 +26,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import com.github.livingwithhippos.unchained.R
 import com.github.livingwithhippos.unchained.base.UnchainedFragment
+import com.github.livingwithhippos.unchained.data.local.ListSnapshotCache
 import com.github.livingwithhippos.unchained.data.model.APIError
 import com.github.livingwithhippos.unchained.data.model.ApiConversionError
 import com.github.livingwithhippos.unchained.data.model.DownloadItem
@@ -60,6 +62,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -434,6 +437,8 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
 
     private val viewModel: ListTabsViewModel by activityViewModels()
 
+    @Inject lateinit var listSnapshotCache: ListSnapshotCache
+
     private var _binding: FragmentDownloadsListBinding? = null
     private val binding
         get() = _binding!!
@@ -454,6 +459,24 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         val downloadAdapter = DownloadListPagingAdapter(this)
         listAdapter = downloadAdapter
         binding.rvDownloadList.adapter = downloadAdapter
+
+        // Cold-start instant paint: show the last-seen downloads immediately (before auth completes
+        // and the network load runs) so the list isn't blank behind a spinner. The live PagingData
+        // replaces this static data as soon as it arrives.
+        viewLifecycleOwner.lifecycleScope.launch {
+            val cached = listSnapshotCache.loadDownloads()
+            if (cached.isNotEmpty() && downloadAdapter.itemCount == 0) {
+                downloadAdapter.submitData(PagingData.from(cached))
+            }
+        }
+        // Persist the first screenful whenever a load settles, to seed the next cold start.
+        downloadAdapter.addLoadStateListener { states ->
+            if (states.refresh is LoadState.NotLoading && downloadAdapter.itemCount > 0) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    listSnapshotCache.saveDownloads(downloadAdapter.snapshot().items)
+                }
+            }
+        }
 
         // download list selection  tracker
         val downloadTracker: SelectionTracker<DownloadItem> =
@@ -691,6 +714,8 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
 class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
 
     private val viewModel: ListTabsViewModel by activityViewModels()
+
+    @Inject lateinit var listSnapshotCache: ListSnapshotCache
     private var _binding: FragmentTorrentsListBinding? = null
     private val binding
         get() = _binding!!
@@ -709,6 +734,23 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
         val torrentAdapter = TorrentListPagingAdapter(this)
         this.torrentAdapter = torrentAdapter
         binding.rvTorrentList.adapter = torrentAdapter
+
+        // Cold-start instant paint: show the last-seen torrents immediately while the live load
+        // runs.
+        viewLifecycleOwner.lifecycleScope.launch {
+            val cached = listSnapshotCache.loadTorrents()
+            if (cached.isNotEmpty() && torrentAdapter.itemCount == 0) {
+                torrentAdapter.submitData(PagingData.from(cached))
+            }
+        }
+        // Persist the first screenful whenever a load settles, to seed the next cold start.
+        torrentAdapter.addLoadStateListener { states ->
+            if (states.refresh is LoadState.NotLoading && torrentAdapter.itemCount > 0) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    listSnapshotCache.saveTorrents(torrentAdapter.snapshot().items)
+                }
+            }
+        }
 
         // torrent list selection  tracker
         val torrentTracker: SelectionTracker<UnifiedTorrent> =
