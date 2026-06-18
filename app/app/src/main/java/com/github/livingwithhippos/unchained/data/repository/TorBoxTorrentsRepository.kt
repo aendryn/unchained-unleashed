@@ -40,12 +40,18 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
      * Set whenever the torrent list changes (an add/delete/pause/resume through this app) or when
      * the user explicitly asks for fresh data. The torrents paging source reads-and-clears this via
      * [consumeListStale] to decide whether it must bypass TorBox's server-side `/mylist` cache for
-     * the next load. Routine loads (first open, tab switches, scrolling) leave it false and so are
+     * the next load. Routine in-session loads (tab switches, scrolling) leave it false and so are
      * served from the cache, which is much faster; anything that could have changed the list flips
      * it true so the next load shows the true status. Singleton-scoped so every mutation call site
      * shares the same flag.
+     *
+     * Starts true so the first load of each cold start bypasses TorBox's cache: `/mylist` lags
+     * behind torrents added outside the app (e.g. from the TorBox website), so without this a fresh
+     * launch showed a stale list until a manual pull-to-refresh. Consumed on that first load, after
+     * which in-session loads (tab switches, scrolling) use the fast cache again until something
+     * changes.
      */
-    private val listStale = AtomicBoolean(false)
+    private val listStale = AtomicBoolean(true)
 
     /** Mark the cached torrent list as stale so the next load fetches fresh data. */
     fun markListStale() {
