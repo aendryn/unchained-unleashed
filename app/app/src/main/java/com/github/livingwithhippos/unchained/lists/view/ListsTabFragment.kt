@@ -447,6 +447,13 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
     // newly added TorBox downloads show without a manual pull-to-refresh.
     private var listAdapter: DownloadListPagingAdapter? = null
 
+    // Cold-start cache paint; cancelled the moment live data takes over so the static snapshot
+    // can't
+    // clobber an in-flight live load (which would leave a non-refreshable PagingData.from() stuck
+    // in
+    // the adapter and make pull-to-refresh a no-op).
+    private var cachePaintJob: Job? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -463,12 +470,13 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
         // Cold-start instant paint: show the last-seen downloads immediately (before auth completes
         // and the network load runs) so the list isn't blank behind a spinner. The live PagingData
         // replaces this static data as soon as it arrives.
-        viewLifecycleOwner.lifecycleScope.launch {
-            val cached = listSnapshotCache.loadDownloads()
-            if (cached.isNotEmpty() && downloadAdapter.itemCount == 0) {
-                downloadAdapter.submitData(PagingData.from(cached))
+        cachePaintJob =
+            viewLifecycleOwner.lifecycleScope.launch {
+                val cached = listSnapshotCache.loadDownloads()
+                if (cached.isNotEmpty() && downloadAdapter.itemCount == 0) {
+                    downloadAdapter.submitData(PagingData.from(cached))
+                }
             }
-        }
         // Persist the first screenful whenever a load settles, to seed the next cold start.
         downloadAdapter.addLoadStateListener { states ->
             if (states.refresh is LoadState.NotLoading && downloadAdapter.itemCount > 0) {
@@ -563,6 +571,9 @@ class DownloadsListFragment : UnchainedFragment(), DownloadListListener {
                         _binding
                             ?: return@launch // capture binding and bail out if view was destroyed
 
+                    // Live data wins: stop the cache paint before it can submit a static snapshot
+                    // over this load.
+                    cachePaintJob?.cancel()
                     downloadAdapter.submitData(it)
                     // stop the refresh animation if playing
                     if (b.srLayout.isRefreshing) {
@@ -724,6 +735,9 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
     // after a torrent was deleted from the TorBox details screen.
     private var torrentAdapter: TorrentListPagingAdapter? = null
 
+    // See DownloadsListFragment.cachePaintJob — cancelled when live data takes over.
+    private var cachePaintJob: Job? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -737,12 +751,13 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
 
         // Cold-start instant paint: show the last-seen torrents immediately while the live load
         // runs.
-        viewLifecycleOwner.lifecycleScope.launch {
-            val cached = listSnapshotCache.loadTorrents()
-            if (cached.isNotEmpty() && torrentAdapter.itemCount == 0) {
-                torrentAdapter.submitData(PagingData.from(cached))
+        cachePaintJob =
+            viewLifecycleOwner.lifecycleScope.launch {
+                val cached = listSnapshotCache.loadTorrents()
+                if (cached.isNotEmpty() && torrentAdapter.itemCount == 0) {
+                    torrentAdapter.submitData(PagingData.from(cached))
+                }
             }
-        }
         // Persist the first screenful whenever a load settles, to seed the next cold start.
         torrentAdapter.addLoadStateListener { states ->
             if (states.refresh is LoadState.NotLoading && torrentAdapter.itemCount > 0) {
@@ -849,6 +864,9 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
                 viewLifecycleOwner.lifecycleScope.launch {
                     val b = _binding ?: return@launch
 
+                    // Live data wins: stop the cache paint before it can submit a static snapshot
+                    // over this load.
+                    cachePaintJob?.cancel()
                     torrentAdapter.submitData(it)
                     if (b.srLayout.isRefreshing) {
                         b.srLayout.isRefreshing = false
