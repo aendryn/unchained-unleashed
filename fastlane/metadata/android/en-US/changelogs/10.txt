@@ -1,0 +1,2 @@
+- Fixed pull-to-refresh spinning forever and the list never updating
+- TorBox torrents added outside the app now show on launch instead of after a manual refresh
