@@ -84,8 +84,37 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
      * Optimistic placeholder rows for torrents just added through this app, keyed by id, shown at
      * the top of the list until the real torrent shows up in TorBox's `/mylist` response (see
      * [getTorrentsList]). Mirrors [deletedIds] but for adds instead of deletes.
+     *
+     * Kept tracked (and refreshed via a direct per-id lookup on every poll) until the torrent
+     * reaches a terminal state, not just until the id first appears in the list response:
+     * TorBox's list cache and its per-id lookup are cached independently and can disagree for
+     * minutes (see TORBOX_REALTIME_PROGRESS_METHOD.md) -- confirmed live, a torrent showed real
+     * downloading progress in TorBox's own UI while `/mylist` here still reported metaDL.
+     * Whichever reading (list vs per-id vs last known) is furthest along wins, so the row can
+     * never regress or disappear while tracked.
      */
     private val optimisticTorrents = ConcurrentHashMap<Long, UnifiedTorrent>()
+
+    /** Rough "how far along" ranking so [furthestAlong] never lets a fresher read look stale. */
+    private fun statusRank(status: UnifiedTorrentStatus): Int =
+        when (status) {
+            UnifiedTorrentStatus.READY,
+            UnifiedTorrentStatus.ERROR -> 3
+            UnifiedTorrentStatus.DOWNLOADING,
+            UnifiedTorrentStatus.UPLOADING,
+            UnifiedTorrentStatus.STALLED,
+            UnifiedTorrentStatus.PROCESSING -> 2
+            UnifiedTorrentStatus.DOWNLOADING_METADATA -> 1
+            UnifiedTorrentStatus.QUEUED,
+            UnifiedTorrentStatus.UNKNOWN -> 0
+        }
+
+    private fun furthestAlong(a: UnifiedTorrent, b: UnifiedTorrent): UnifiedTorrent {
+        val rankA = statusRank(a.status)
+        val rankB = statusRank(b.status)
+        if (rankA != rankB) return if (rankA > rankB) a else b
+        return if (a.progress >= b.progress) a else b
+    }
 
     /**
      * Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever.
@@ -157,16 +186,36 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                             .orEmpty()
                             .filterNot { deletedIds.containsKey(it.id) }
                             .map { it.toUnified() }
-                    // Drop optimistic placeholders once the real torrent shows up (see
-                    // [optimisticTorrents]), and only prepend surviving placeholders on the first
-                    // page so later pages don't repeat them.
-                    optimisticTorrents.keys.retainAll { id ->
-                        real.none { it.rawId == id.toString() }
+                    // Keep tracked entries fresh: for each, take whichever of (list reading,
+                    // direct per-id reading, last known reading) is furthest along, so a stale
+                    // read from either cache can never make the row regress or disappear. Only
+                    // stop tracking once terminal (ready/error) -- the extra per-id call this
+                    // costs per poll is cheap and self-bounding (every torrent eventually reaches
+                    // a terminal state), so there's no need for a separate time cap that could
+                    // itself cause a regression/disappearance if the list is still lagging when it
+                    // fires.
+                    val realById = real.associateBy { it.rawId }
+                    optimisticTorrents.keys.toList().forEach { id ->
+                        val fromReal = realById[id.toString()]
+                        val fromId = getTorrentInfo(id)
+                        val best =
+                            listOfNotNull(optimisticTorrents[id], fromReal, fromId)
+                                .reduce(::furthestAlong)
+                        if (statusRank(best.status) == TERMINAL_RANK) {
+                            optimisticTorrents.remove(id)
+                        } else {
+                            optimisticTorrents[id] = best
+                        }
                     }
+                    // Only prepend surviving placeholders on the first page so later pages don't
+                    // repeat them, and never show a tracked id twice (once from the overlay, once
+                    // from `real`).
+                    val trackedIds = optimisticTorrents.keys.map { it.toString() }.toSet()
+                    val realWithoutTracked = real.filterNot { it.rawId in trackedIds }
                     if (offset == null || offset == 0) {
-                        optimisticTorrents.values.toList() + real
+                        optimisticTorrents.values.toList() + realWithoutTracked
                     } else {
-                        real
+                        realWithoutTracked
                     }
                 } else {
                     Timber.d("TorBox getTorrentsList failed: ${describe(response, body)}")
@@ -404,6 +453,10 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
         // while still bounding the suppression so a tombstone can never hide a torrent
         // indefinitely.
         const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
+
+        // statusRank() value for a terminal state (ready/error) -- once a tracked torrent reaches
+        // this, list data alone is trustworthy and per-id polling for it can stop.
+        const val TERMINAL_RANK = 3
     }
 }
 
