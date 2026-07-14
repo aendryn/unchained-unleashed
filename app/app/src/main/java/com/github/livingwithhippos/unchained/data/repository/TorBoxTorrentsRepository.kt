@@ -133,21 +133,22 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
      */
     private suspend fun addOptimistic(id: Long, magnet: String) {
         optimisticTorrents[id] =
-            getTorrentInfo(id)
-                ?: UnifiedTorrent(
-                    service = DebridService.TORBOX,
-                    rawId = id.toString(),
-                    name = magnetName(magnet) ?: id.toString(),
-                    hash = null,
-                    bytes = 0L,
-                    progress = 0f,
-                    status = UnifiedTorrentStatus.DOWNLOADING_METADATA,
-                    rawStatus = "metaDL",
-                    added = Instant.now().toString(),
-                    speed = null,
-                    seeders = null,
-                    links = emptyList(),
-                )
+            (getTorrentInfo(id)
+                    ?: UnifiedTorrent(
+                        service = DebridService.TORBOX,
+                        rawId = id.toString(),
+                        name = magnetName(magnet) ?: id.toString(),
+                        hash = null,
+                        bytes = 0L,
+                        progress = 0f,
+                        status = UnifiedTorrentStatus.DOWNLOADING_METADATA,
+                        rawStatus = "metaDL",
+                        added = Instant.now().toString(),
+                        speed = null,
+                        seeders = null,
+                        links = emptyList(),
+                    ))
+                .copy(isOptimistic = true)
     }
 
     private fun bearer(): String {
@@ -206,7 +207,9 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                         ) {
                             optimisticTorrents.remove(id)
                         } else {
-                            optimisticTorrents[id] = best
+                            // fromReal/fromId come back with isOptimistic = false; keep it true
+                            // while still tracked regardless of which reading won.
+                            optimisticTorrents[id] = best.copy(isOptimistic = true)
                         }
                     }
                     // Only prepend surviving placeholders on the first page so later pages don't
@@ -394,8 +397,15 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                 // failed delete look successful (so the torrent stayed in the list).
                 if (response.isSuccessful && body?.success == true) {
                     // TorBox keeps listing a deleted torrent for a moment; tombstone it so the
-                    // post-delete refresh doesn't bring it back (see [deletedIds]).
-                    if (operation == "delete") deletedIds[id] = System.currentTimeMillis()
+                    // post-delete refresh doesn't bring it back (see [deletedIds]). Also drop it
+                    // from the optimistic overlay -- otherwise a torrent still being tracked there
+                    // (e.g. showing the metaDL placeholder) keeps getting refreshed via its own
+                    // per-id lookup, which lags on deletes the same way `/mylist` does, so it would
+                    // never reach a terminal status and never leave the list.
+                    if (operation == "delete") {
+                        deletedIds[id] = System.currentTimeMillis()
+                        optimisticTorrents.remove(id)
+                    }
                     markListStale()
                     EitherResult.Success(Unit)
                 } else {
