@@ -201,7 +201,9 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                         val best =
                             listOfNotNull(optimisticTorrents[id], fromReal, fromId)
                                 .reduce(::furthestAlong)
-                        if (statusRank(best.status) == TERMINAL_RANK) {
+                        if (best.status == UnifiedTorrentStatus.READY ||
+                            best.status == UnifiedTorrentStatus.ERROR
+                        ) {
                             optimisticTorrents.remove(id)
                         } else {
                             optimisticTorrents[id] = best
@@ -453,10 +455,6 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
         // while still bounding the suppression so a tombstone can never hide a torrent
         // indefinitely.
         const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
-
-        // statusRank() value for a terminal state (ready/error) -- once a tracked torrent reaches
-        // this, list data alone is trustworthy and per-id polling for it can stop.
-        const val TERMINAL_RANK = 3
     }
 }
 
