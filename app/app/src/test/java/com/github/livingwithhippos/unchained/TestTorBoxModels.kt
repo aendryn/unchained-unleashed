@@ -9,6 +9,7 @@ import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxDownloadLin
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrent
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxTorrentListResponse
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxUserResponse
+import com.github.livingwithhippos.unchained.data.repository.magnetName
 import com.squareup.moshi.Moshi
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -257,5 +258,18 @@ class TestTorBoxModels {
         // RD progress is already 0..100 and must pass through unchanged
         assertEquals(50f, u.progress, 0.001f)
         assertEquals("RD rows must keep the migration bridge item", "RDID1", u.realDebridItem?.id)
+    }
+
+    // ------------------------------------------------------------------------------- magnetName
+
+    @Test
+    fun magnetNameDecodesDnParam() {
+        val magnet = "magnet:?xt=urn:btih:abc&dn=Big+Buck+Bunny%20%282160p%29&tr=udp%3A%2F%2Fx"
+        assertEquals("Big Buck Bunny (2160p)", magnetName(magnet))
+    }
+
+    @Test
+    fun magnetNameReturnsNullWithoutDnParam() {
+        assertNull(magnetName("magnet:?xt=urn:btih:abc&tr=udp%3A%2F%2Ftracker.example.org"))
     }
 }

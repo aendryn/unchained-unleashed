@@ -1,8 +1,10 @@
 package com.github.livingwithhippos.unchained.data.repository
 
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.NetworkError
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.data.model.toUnified
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxResponse
@@ -11,6 +13,8 @@ import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import com.github.livingwithhippos.unchained.utilities.TORBOX_API_VERSION
 import java.io.File
+import java.net.URLDecoder
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -77,12 +81,44 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
     private val deletedIds = ConcurrentHashMap<Long, Long>()
 
     /**
+     * Optimistic placeholder rows for torrents just added through this app, keyed by id, shown at
+     * the top of the list until the real torrent shows up in TorBox's `/mylist` response (see
+     * [getTorrentsList]). Mirrors [deletedIds] but for adds instead of deletes.
+     */
+    private val optimisticTorrents = ConcurrentHashMap<Long, UnifiedTorrent>()
+
+    /**
      * Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever.
      */
     private fun pruneTombstones() {
         if (deletedIds.isEmpty()) return
         val cutoff = System.currentTimeMillis() - DELETED_TOMBSTONE_MS
         deletedIds.entries.removeAll { it.value < cutoff }
+    }
+
+    /**
+     * Try the real status first (TorBox usually has *some* answer for a freshly created id even
+     * before it shows up in `/mylist`), so the placeholder row doesn't lie about "metaDL" when the
+     * torrent actually started further along (e.g. instant-cached). Falls back to a guessed metaDL
+     * placeholder only if that lookup comes back empty.
+     */
+    private suspend fun addOptimistic(id: Long, magnet: String) {
+        optimisticTorrents[id] =
+            getTorrentInfo(id)
+                ?: UnifiedTorrent(
+                    service = DebridService.TORBOX,
+                    rawId = id.toString(),
+                    name = magnetName(magnet) ?: id.toString(),
+                    hash = null,
+                    bytes = 0L,
+                    progress = 0f,
+                    status = UnifiedTorrentStatus.DOWNLOADING_METADATA,
+                    rawStatus = "metaDL",
+                    added = Instant.now().toString(),
+                    speed = null,
+                    seeders = null,
+                    links = emptyList(),
+                )
     }
 
     private fun bearer(): String {
@@ -116,10 +152,22 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                     pruneTombstones()
                     // Hide torrents we just deleted but TorBox's list still returns (see
                     // [deletedIds]).
-                    body.data
-                        .orEmpty()
-                        .filterNot { deletedIds.containsKey(it.id) }
-                        .map { it.toUnified() }
+                    val real =
+                        body.data
+                            .orEmpty()
+                            .filterNot { deletedIds.containsKey(it.id) }
+                            .map { it.toUnified() }
+                    // Drop optimistic placeholders once the real torrent shows up (see
+                    // [optimisticTorrents]), and only prepend surviving placeholders on the first
+                    // page so later pages don't repeat them.
+                    optimisticTorrents.keys.retainAll { id ->
+                        real.none { it.rawId == id.toString() }
+                    }
+                    if (offset == null || offset == 0) {
+                        optimisticTorrents.values.toList() + real
+                    } else {
+                        real
+                    }
                 } else {
                     Timber.d("TorBox getTorrentsList failed: ${describe(response, body)}")
                     emptyList()
@@ -181,6 +229,7 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                 if (response.isSuccessful && body?.success == true && newId != null) {
                     // Re-adding clears any stale tombstone so the torrent can show again.
                     deletedIds.remove(newId)
+                    addOptimistic(newId, magnet)
                     markListStale()
                     EitherResult.Success(newId)
                 } else {
@@ -357,3 +406,9 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
         const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
     }
 }
+
+/** Extracts and URL-decodes the `dn=` (display name) param from a magnet link, if present. */
+internal fun magnetName(magnet: String): String? =
+    Regex("dn=([^&]+)").find(magnet)?.groupValues?.get(1)?.let {
+        runCatching { URLDecoder.decode(it, "UTF-8") }.getOrNull()
+    }
