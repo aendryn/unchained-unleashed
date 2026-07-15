@@ -90,6 +90,12 @@ class UnifiedTorrentPagingSource(
                         rdHead == null && tbHead == null -> break
                         tbHead == null -> out.add(rdBuffer.removeFirst())
                         rdHead == null -> out.add(tbBuffer.removeFirst())
+                        // A just-submitted torrent always wins regardless of `added`: comparing
+                        // timestamps across services/devices can't be trusted to put "just
+                        // submitted" first (client clock skew, server-side add lag, etc.).
+                        rdHead.isOptimistic != tbHead.isOptimistic ->
+                            if (rdHead.isOptimistic) out.add(rdBuffer.removeFirst())
+                            else out.add(tbBuffer.removeFirst())
                         // Newest first; `added` is ISO-8601 so reverse-lexicographic == by recency.
                         sortKey(rdHead) >= sortKey(tbHead) -> out.add(rdBuffer.removeFirst())
                         else -> out.add(tbBuffer.removeFirst())
@@ -171,7 +177,11 @@ class UnifiedTorrentPagingSource(
         val filtered =
             if (query.isBlank()) items
             else items.filter { it.name.contains(query, ignoreCase = true) }
-        return filtered.sortedByDescending { sortKey(it) }
+        // Optimistic (just-submitted) entries first regardless of `added` -- see isOptimistic
+        // kdoc -- then the rest newest first.
+        return filtered.sortedWith(
+            compareByDescending<UnifiedTorrent> { it.isOptimistic }.thenByDescending { sortKey(it) }
+        )
     }
 
     private fun sortKey(torrent: UnifiedTorrent): String = torrent.added ?: ""

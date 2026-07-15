@@ -1,8 +1,10 @@
 package com.github.livingwithhippos.unchained.data.repository
 
+import com.github.livingwithhippos.unchained.data.model.DebridService
 import com.github.livingwithhippos.unchained.data.model.NetworkError
 import com.github.livingwithhippos.unchained.data.model.UnchainedNetworkException
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.data.model.toUnified
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxControlTorrentRequest
 import com.github.livingwithhippos.unchained.data.model.torbox.TorBoxResponse
@@ -11,6 +13,8 @@ import com.github.livingwithhippos.unchained.data.remote.TorBoxApi
 import com.github.livingwithhippos.unchained.utilities.EitherResult
 import com.github.livingwithhippos.unchained.utilities.TORBOX_API_VERSION
 import java.io.File
+import java.net.URLDecoder
+import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -77,12 +81,74 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
     private val deletedIds = ConcurrentHashMap<Long, Long>()
 
     /**
+     * Optimistic placeholder rows for torrents just added through this app, keyed by id, shown at
+     * the top of the list until the real torrent shows up in TorBox's `/mylist` response (see
+     * [getTorrentsList]). Mirrors [deletedIds] but for adds instead of deletes.
+     *
+     * Kept tracked (and refreshed via a direct per-id lookup on every poll) until the torrent
+     * reaches a terminal state, not just until the id first appears in the list response:
+     * TorBox's list cache and its per-id lookup are cached independently and can disagree for
+     * minutes (see TORBOX_REALTIME_PROGRESS_METHOD.md) -- confirmed live, a torrent showed real
+     * downloading progress in TorBox's own UI while `/mylist` here still reported metaDL.
+     * Whichever reading (list vs per-id vs last known) is furthest along wins, so the row can
+     * never regress or disappear while tracked.
+     */
+    private val optimisticTorrents = ConcurrentHashMap<Long, UnifiedTorrent>()
+
+    /** Rough "how far along" ranking so [furthestAlong] never lets a fresher read look stale. */
+    private fun statusRank(status: UnifiedTorrentStatus): Int =
+        when (status) {
+            UnifiedTorrentStatus.READY,
+            UnifiedTorrentStatus.ERROR -> 3
+            UnifiedTorrentStatus.DOWNLOADING,
+            UnifiedTorrentStatus.UPLOADING,
+            UnifiedTorrentStatus.STALLED,
+            UnifiedTorrentStatus.PROCESSING -> 2
+            UnifiedTorrentStatus.DOWNLOADING_METADATA -> 1
+            UnifiedTorrentStatus.QUEUED,
+            UnifiedTorrentStatus.UNKNOWN -> 0
+        }
+
+    private fun furthestAlong(a: UnifiedTorrent, b: UnifiedTorrent): UnifiedTorrent {
+        val rankA = statusRank(a.status)
+        val rankB = statusRank(b.status)
+        if (rankA != rankB) return if (rankA > rankB) a else b
+        return if (a.progress >= b.progress) a else b
+    }
+
+    /**
      * Drop tombstones older than [DELETED_TOMBSTONE_MS] so they can't suppress a torrent forever.
      */
     private fun pruneTombstones() {
         if (deletedIds.isEmpty()) return
         val cutoff = System.currentTimeMillis() - DELETED_TOMBSTONE_MS
         deletedIds.entries.removeAll { it.value < cutoff }
+    }
+
+    /**
+     * Try the real status first (TorBox usually has *some* answer for a freshly created id even
+     * before it shows up in `/mylist`), so the placeholder row doesn't lie about "metaDL" when the
+     * torrent actually started further along (e.g. instant-cached). Falls back to a guessed metaDL
+     * placeholder only if that lookup comes back empty.
+     */
+    private suspend fun addOptimistic(id: Long, magnet: String) {
+        optimisticTorrents[id] =
+            (getTorrentInfo(id)
+                    ?: UnifiedTorrent(
+                        service = DebridService.TORBOX,
+                        rawId = id.toString(),
+                        name = magnetName(magnet) ?: id.toString(),
+                        hash = null,
+                        bytes = 0L,
+                        progress = 0f,
+                        status = UnifiedTorrentStatus.DOWNLOADING_METADATA,
+                        rawStatus = "metaDL",
+                        added = Instant.now().toString(),
+                        speed = null,
+                        seeders = null,
+                        links = emptyList(),
+                    ))
+                .copy(isOptimistic = true)
     }
 
     private fun bearer(): String {
@@ -116,10 +182,46 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                     pruneTombstones()
                     // Hide torrents we just deleted but TorBox's list still returns (see
                     // [deletedIds]).
-                    body.data
-                        .orEmpty()
-                        .filterNot { deletedIds.containsKey(it.id) }
-                        .map { it.toUnified() }
+                    val real =
+                        body.data
+                            .orEmpty()
+                            .filterNot { deletedIds.containsKey(it.id) }
+                            .map { it.toUnified() }
+                    // Keep tracked entries fresh: for each, take whichever of (list reading,
+                    // direct per-id reading, last known reading) is furthest along, so a stale
+                    // read from either cache can never make the row regress or disappear. Only
+                    // stop tracking once terminal (ready/error) -- the extra per-id call this
+                    // costs per poll is cheap and self-bounding (every torrent eventually reaches
+                    // a terminal state), so there's no need for a separate time cap that could
+                    // itself cause a regression/disappearance if the list is still lagging when it
+                    // fires.
+                    val realById = real.associateBy { it.rawId }
+                    optimisticTorrents.keys.toList().forEach { id ->
+                        val fromReal = realById[id.toString()]
+                        val fromId = getTorrentInfo(id)
+                        val best =
+                            listOfNotNull(optimisticTorrents[id], fromReal, fromId)
+                                .reduce(::furthestAlong)
+                        if (best.status == UnifiedTorrentStatus.READY ||
+                            best.status == UnifiedTorrentStatus.ERROR
+                        ) {
+                            optimisticTorrents.remove(id)
+                        } else {
+                            // fromReal/fromId come back with isOptimistic = false; keep it true
+                            // while still tracked regardless of which reading won.
+                            optimisticTorrents[id] = best.copy(isOptimistic = true)
+                        }
+                    }
+                    // Only prepend surviving placeholders on the first page so later pages don't
+                    // repeat them, and never show a tracked id twice (once from the overlay, once
+                    // from `real`).
+                    val trackedIds = optimisticTorrents.keys.map { it.toString() }.toSet()
+                    val realWithoutTracked = real.filterNot { it.rawId in trackedIds }
+                    if (offset == null || offset == 0) {
+                        optimisticTorrents.values.toList() + realWithoutTracked
+                    } else {
+                        realWithoutTracked
+                    }
                 } else {
                     Timber.d("TorBox getTorrentsList failed: ${describe(response, body)}")
                     emptyList()
@@ -181,6 +283,7 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                 if (response.isSuccessful && body?.success == true && newId != null) {
                     // Re-adding clears any stale tombstone so the torrent can show again.
                     deletedIds.remove(newId)
+                    addOptimistic(newId, magnet)
                     markListStale()
                     EitherResult.Success(newId)
                 } else {
@@ -294,8 +397,15 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
                 // failed delete look successful (so the torrent stayed in the list).
                 if (response.isSuccessful && body?.success == true) {
                     // TorBox keeps listing a deleted torrent for a moment; tombstone it so the
-                    // post-delete refresh doesn't bring it back (see [deletedIds]).
-                    if (operation == "delete") deletedIds[id] = System.currentTimeMillis()
+                    // post-delete refresh doesn't bring it back (see [deletedIds]). Also drop it
+                    // from the optimistic overlay -- otherwise a torrent still being tracked there
+                    // (e.g. showing the metaDL placeholder) keeps getting refreshed via its own
+                    // per-id lookup, which lags on deletes the same way `/mylist` does, so it would
+                    // never reach a terminal status and never leave the list.
+                    if (operation == "delete") {
+                        deletedIds[id] = System.currentTimeMillis()
+                        optimisticTorrents.remove(id)
+                    }
                     markListStale()
                     EitherResult.Success(Unit)
                 } else {
@@ -357,3 +467,9 @@ constructor(private val torBoxApi: TorBoxApi, private val keyRepository: TorBoxK
         const val DELETED_TOMBSTONE_MS = 5 * 60 * 1000L
     }
 }
+
+/** Extracts and URL-decodes the `dn=` (display name) param from a magnet link, if present. */
+internal fun magnetName(magnet: String): String? =
+    Regex("dn=([^&]+)").find(magnet)?.groupValues?.get(1)?.let {
+        runCatching { URLDecoder.decode(it, "UTF-8") }.getOrNull()
+    }

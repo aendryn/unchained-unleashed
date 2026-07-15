@@ -68,6 +68,11 @@ data class UnifiedTorrent(
     // RD-typed details/processing navigation keep working unchanged while the details screen is
     // migrated to UnifiedTorrent. Remove once details accept UnifiedTorrent (roadmap §5/§6).
     val realDebridItem: TorrentItem? = null,
+    // True for a just-added torrent still being optimistically tracked (see
+    // TorBoxTorrentsRepository.optimisticTorrents). Lets the paging source place it at the very
+    // top regardless of [added], since comparing timestamps across services/devices can't be
+    // trusted to put "just submitted" first (client clock skew, server-side add lag, etc.).
+    val isOptimistic: Boolean = false,
 ) : Parcelable {
     /** Stable composite key for DiffUtil / selection across both services. */
     val unifiedId: String

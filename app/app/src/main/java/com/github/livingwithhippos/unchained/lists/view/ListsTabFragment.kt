@@ -16,6 +16,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
 import androidx.paging.PagingData
@@ -33,6 +34,7 @@ import com.github.livingwithhippos.unchained.data.model.DownloadItem
 import com.github.livingwithhippos.unchained.data.model.EmptyBodyError
 import com.github.livingwithhippos.unchained.data.model.NetworkError
 import com.github.livingwithhippos.unchained.data.model.UnifiedTorrent
+import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.databinding.FragmentDownloadsListBinding
 import com.github.livingwithhippos.unchained.databinding.FragmentTabListsBinding
 import com.github.livingwithhippos.unchained.databinding.FragmentTorrentsListBinding
@@ -781,6 +783,23 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
 
         torrentAdapter.tracker = torrentTracker
 
+        // Keep polling while any row is mid-transfer so status/progress advance live (MetaDL ->
+        // Downloading -> Ready) without a manual pull-to-refresh. Backs off to a slow idle tick
+        // otherwise so we're not hammering /mylist when nothing is happening.
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (isActive) {
+                    if (torrentAdapter.snapshot().items.any { it.status in ACTIVE_TORRENT_STATUSES }) {
+                        viewModel.markTorrentsStale()
+                        torrentAdapter.refresh()
+                        delay(POLL_ACTIVE_MS)
+                    } else {
+                        delay(POLL_IDLE_MS)
+                    }
+                }
+            }
+        }
+
         torrentTracker.addObserver(
             object : SelectionTracker.SelectionObserver<UnifiedTorrent>() {
                 override fun onSelectionChanged() {
@@ -1045,6 +1064,20 @@ class TorrentsListFragment : UnchainedFragment(), TorrentListListener {
                     )
             }
         }
+    }
+
+    companion object {
+        private const val POLL_ACTIVE_MS = 2500L
+        private const val POLL_IDLE_MS = 6000L
+        private val ACTIVE_TORRENT_STATUSES =
+            setOf(
+                UnifiedTorrentStatus.QUEUED,
+                UnifiedTorrentStatus.DOWNLOADING_METADATA,
+                UnifiedTorrentStatus.DOWNLOADING,
+                UnifiedTorrentStatus.UPLOADING,
+                UnifiedTorrentStatus.STALLED,
+                UnifiedTorrentStatus.PROCESSING,
+            )
     }
 }
 

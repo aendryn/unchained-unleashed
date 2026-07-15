@@ -5,6 +5,7 @@
     <string name="quad9" translatable="false">Quad9</string>
     <string name="mullvad" translatable="false">Mullvad</string>
     <string name="percent_format" translatable="false">%1$.1f%%</string>
+    <string name="awaiting_progress_update">Awaiting Progress Update</string>
     <string name="loading_auth_link">Loading Authentication…</string>
     <string name="please_visit">Please visit\u0020</string>
     <string name="link">Link</string>

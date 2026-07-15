@@ -17,6 +17,8 @@ import com.github.livingwithhippos.unchained.data.model.UnifiedTorrentStatus
 import com.github.livingwithhippos.unchained.databinding.ItemListTorrentBinding
 import com.github.livingwithhippos.unchained.utilities.extension.getFileSizeString
 import com.github.livingwithhippos.unchained.utilities.extension.getStatusTranslation
+import java.time.Duration
+import java.time.Instant
 
 class TorrentListPagingAdapter(private val listener: TorrentListListener) :
     PagingDataAdapter<UnifiedTorrent, TorrentViewHolder>(DiffCallback()) {
@@ -63,6 +65,10 @@ class TorrentViewHolder(
 
     var mItem: UnifiedTorrent? = null
 
+    companion object {
+        private val METADL_STALL_THRESHOLD = Duration.ofMinutes(2)
+    }
+
     fun bindCell(item: UnifiedTorrent, selected: Boolean) {
         mItem = item
         binding.selectionIndicator.visibility = if (selected) View.VISIBLE else View.GONE
@@ -73,12 +79,28 @@ class TorrentViewHolder(
                 binding.root.context.getStatusTranslation("ready")
             else binding.root.context.getStatusTranslation(item.rawStatus)
 
-        if (item.progress >= 0 && item.progress < 100) {
-            binding.tvProgress.text =
-                itemView.context.getString(R.string.percent_format, item.progress)
-            binding.tvProgress.visibility = View.VISIBLE
-        } else {
-            binding.tvProgress.visibility = View.GONE
+        // Metadata fetch (magnet -> file list) has no meaningful percentage of its own -- both
+        // services report 0% the whole time it's in flight. Past METADL_STALL_THRESHOLD, keep
+        // showing that rather than a 0.0% that reads as "hasn't started" when it may in fact be
+        // slowly progressing server-side with no percentage to surface (see
+        // TORBOX_REALTIME_PROGRESS_METHOD.md).
+        val metadlPlaceholder =
+            item.status == UnifiedTorrentStatus.DOWNLOADING_METADATA &&
+                item.added
+                    ?.let { runCatching { Instant.parse(it) }.getOrNull() }
+                    ?.let { Duration.between(it, Instant.now()) >= METADL_STALL_THRESHOLD } == true
+        when {
+            metadlPlaceholder -> {
+                binding.tvProgress.text =
+                    itemView.context.getString(R.string.awaiting_progress_update)
+                binding.tvProgress.visibility = View.VISIBLE
+            }
+            item.progress >= 0 && item.progress < 100 -> {
+                binding.tvProgress.text =
+                    itemView.context.getString(R.string.percent_format, item.progress)
+                binding.tvProgress.visibility = View.VISIBLE
+            }
+            else -> binding.tvProgress.visibility = View.GONE
         }
         binding.tvName.text = item.name
         binding.tvSize.text = getFileSizeString(itemView.context, item.bytes)
